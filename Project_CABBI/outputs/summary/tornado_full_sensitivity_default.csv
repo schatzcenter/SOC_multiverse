@@ -1,0 +1,85 @@
+level,level_value_abs,effect_q05_abs,effect_q95_abs,specifications,conservation_practice,variable,default_net_credit_mg_co2e_ha_yr,level_label,variable_label,group
+n_obs,0.415313,0.415313,0.415313,6480,nt,n_rate,0.415313,UAN20,N rate,biophysical
+uan10,0.3347825,-0.0638799999999998,0.759441085,6480,nt,n_rate,0.415313,UAN10,N rate,biophysical
+uan30,0.3951415,-0.0271291999999999,2.326059,6480,nt,n_rate,0.415313,UAN30,N rate,biophysical
+hlu_cc,0.875118,0.5208819,2.3538305,4860,nt,historic_land_use,0.415313,Cont. corn,Land-use history,biophysical
+hlu_cs0n,0.317988,0.00951249999999976,0.39913135,4860,nt,historic_land_use,0.415313,"Corn-soy, 0 N",Land-use history,biophysical
+hlu_cs,0.420568,0.38348985,0.458387,4860,nt,historic_land_use,0.415313,Corn-soy,Land-use history,biophysical
+hlu_site,0.415313,0.415313,0.415313,4860,nt,historic_land_use,0.415313,Site history,Land-use history,biophysical
+cont,0.415313,0.415313,0.415313,6480,nt,cycling_frequency,0.415313,Continuous,Cycling,biophysical
+rev10,0.330869,-0.0175975000000005,0.72455384,6480,nt,cycling_frequency,0.415313,Cycle 10 yr,Cycling,biophysical
+rev5,0.236172,-0.238961,0.724054015,6480,nt,cycling_frequency,0.415313,Cycle 5 yr,Cycling,biophysical
+dec4_def,0.415313,0.415313,0.415313,6480,nt,dec4,0.415313,DEC4 default (0.0025),DEC4 (model),biophysical
+dec4_hi,0.422163,0.41065665,0.4654655,6480,nt,dec4,0.415313,DEC4 0.0048,DEC4 (model),biophysical
+dec4_lo,0.41431165,0.4085025,0.4158332,6480,nt,dec4,0.415313,DEC4 0.0022,DEC4 (model),biophysical
+slow_passive,0.3791865,0.3037437,0.527829,3888,nt,carbon_pool,0.415313,Slow+passive,Carbon pool,accounting
+somsc,0.415313,0.415313,0.415313,3888,nt,carbon_pool,0.415313,somsc,Carbon pool,accounting
+somtc,0.3850629,0.248714,0.4246043,3888,nt,carbon_pool,0.415313,somtc,Carbon pool,accounting
+totc,0.6961525,0.4927137,1.3650623,3888,nt,carbon_pool,0.415313,totc,Carbon pool,accounting
+totsysc,0.7497866,0.49300161,1.6287382,3888,nt,carbon_pool,0.415313,totsysc,Carbon pool,accounting
+10,0.2957164,-0.7266245,1.353931,6480,nt,horizon_years,0.415313,10 yr,Horizon,accounting
+20,0.397717,0.13140045,0.757612999999999,6480,nt,horizon_years,0.415313,20 yr,Horizon,accounting
+30,0.415313,0.415313,0.415313,6480,nt,horizon_years,0.415313,30 yr,Horizon,accounting
+cf_conv,0.415313,0.415313,0.415313,6480,nt,counterfactual,0.415313,Conv.: fall cultivator/disk,Counterfactual,accounting
+cf_convplow,1.386798,0.6181643,2.821513,6480,nt,counterfactual,0.415313,Conv.: plow,Counterfactual,accounting
+cf_convrt,-0.11587015,-0.994126,0.3835415,6480,nt,counterfactual,0.415313,Conv. = RT,Counterfactual,accounting
+direct_ar5,1.877339,1.0945739,3.9885933,9720,nt,n2o_option,0.415313,"Direct N2O, GWP 265",N2O treatment,accounting
+none,0.415313,0.415313,0.415313,9720,nt,n2o_option,0.415313,SOC only,N2O treatment,accounting
+area,0.415313,0.415313,0.415313,9720,nt,functional_unit,0.415313,Per area,Functional unit,accounting
+bushel,0.415833,0.24861283,0.7759385,9720,nt,functional_unit,0.415313,Per bushel (CI),Functional unit,accounting
+n_obs,0.478373,0.478373,0.478373,6480,rt,n_rate,0.478373,UAN20,N rate,biophysical
+uan10,0.4635917,0.19021565,0.67197315,6480,rt,n_rate,0.478373,UAN10,N rate,biophysical
+uan30,0.6528365,0.279506165,2.47878455,6480,rt,n_rate,0.478373,UAN30,N rate,biophysical
+hlu_cc,0.5940015,0.400932,1.8491614,4860,rt,historic_land_use,0.478373,Cont. corn,Land-use history,biophysical
+hlu_cs0n,0.456452,0.2436725,0.49351925,4860,rt,historic_land_use,0.478373,"Corn-soy, 0 N",Land-use history,biophysical
+hlu_cs,0.480519,0.47520775,0.53344925,4860,rt,historic_land_use,0.478373,Corn-soy,Land-use history,biophysical
+hlu_site,0.478373,0.478373,0.478373,4860,rt,historic_land_use,0.478373,Site history,Land-use history,biophysical
+cont,0.478373,0.478373,0.478373,6480,rt,cycling_frequency,0.478373,Continuous,Cycling,biophysical
+rev10,0.37747,0.171386,0.446257015,6480,rt,cycling_frequency,0.478373,Cycle 10 yr,Cycling,biophysical
+rev5,0.319083,-0.000185499999999894,0.4214924,6480,rt,cycling_frequency,0.478373,Cycle 5 yr,Cycling,biophysical
+dec4_def,0.478373,0.478373,0.478373,6480,rt,dec4,0.478373,DEC4 default (0.0025),DEC4 (model),biophysical
+dec4_hi,0.481489,0.47562765,0.5353035,6480,rt,dec4,0.478373,DEC4 0.0048,DEC4 (model),biophysical
+dec4_lo,0.477943,0.4717325,0.478741,6480,rt,dec4,0.478373,DEC4 0.0022,DEC4 (model),biophysical
+slow_passive,0.436942,0.337733,0.56243965,3888,rt,carbon_pool,0.478373,Slow+passive,Carbon pool,accounting
+somsc,0.478373,0.478373,0.478373,3888,rt,carbon_pool,0.478373,somsc,Carbon pool,accounting
+somtc,0.4753255,0.37156,0.533942,3888,rt,carbon_pool,0.478373,somtc,Carbon pool,accounting
+totc,0.4921431,0.399006,0.85462565,3888,rt,carbon_pool,0.478373,totc,Carbon pool,accounting
+totsysc,0.509994,0.38037935,1.13892365,3888,rt,carbon_pool,0.478373,totsysc,Carbon pool,accounting
+10,0.5480195,0.0825054,1.2435745,6480,rt,horizon_years,0.478373,10 yr,Horizon,accounting
+20,0.531135,0.4162853,0.8007025,6480,rt,horizon_years,0.478373,20 yr,Horizon,accounting
+30,0.478373,0.478373,0.478373,6480,rt,horizon_years,0.478373,30 yr,Horizon,accounting
+cf_conv,0.478373,0.478373,0.478373,6480,rt,counterfactual,0.478373,Conv.: fall cultivator/disk,Counterfactual,accounting
+cf_convplow,1.409744,0.676963,2.85704745,6480,rt,counterfactual,0.478373,Conv.: plow,Counterfactual,accounting
+cf_convrt,-0.0347095,-0.911459,0.448076265,6480,rt,counterfactual,0.478373,Conv. = RT,Counterfactual,accounting
+direct_ar5,0.48544285,0.130654,2.47965505,9720,rt,n2o_option,0.478373,"Direct N2O, GWP 265",N2O treatment,accounting
+none,0.478373,0.478373,0.478373,9720,rt,n2o_option,0.478373,SOC only,N2O treatment,accounting
+area,0.478373,0.478373,0.478373,9720,rt,functional_unit,0.478373,Per area,Functional unit,accounting
+bushel,0.478373,0.05678935,0.5895934,9720,rt,functional_unit,0.478373,Per bushel (CI),Functional unit,accounting
+n_obs,1.0837,1.0837,1.0837,6480,cc,n_rate,1.0837,UAN20,N rate,biophysical
+uan10,0.7228635,0.44521905,1.0055,6480,cc,n_rate,1.0837,UAN10,N rate,biophysical
+uan30,1.65577,1.31742575,3.8147805,6480,cc,n_rate,1.0837,UAN30,N rate,biophysical
+hlu_cc,1.57483,1.18332255,3.2617255,4860,cc,historic_land_use,1.0837,Cont. corn,Land-use history,biophysical
+hlu_cs0n,0.981775,0.6917575,1.0679575,4860,cc,historic_land_use,1.0837,"Corn-soy, 0 N",Land-use history,biophysical
+hlu_cs,1.093718,1.0119085,1.1648365,4860,cc,historic_land_use,1.0837,Corn-soy,Land-use history,biophysical
+hlu_site,1.0837,1.0837,1.0837,4860,cc,historic_land_use,1.0837,Site history,Land-use history,biophysical
+cont,1.0837,1.0837,1.0837,6480,cc,cycling_frequency,1.0837,Continuous,Cycling,biophysical
+rev10,1.02514,0.9050119,1.17862999999999,6480,cc,cycling_frequency,1.0837,Cycle 10 yr,Cycling,biophysical
+rev5,0.854535,0.5362095,1.01310805,6480,cc,cycling_frequency,1.0837,Cycle 5 yr,Cycling,biophysical
+dec4_def,1.0837,1.0837,1.0837,6480,cc,dec4,1.0837,DEC4 default (0.0025),DEC4 (model),biophysical
+dec4_hi,1.11299,1.09597095,1.1776595,6480,cc,dec4,1.0837,DEC4 0.0048,DEC4 (model),biophysical
+dec4_lo,1.07994,1.07098,1.082112,6480,cc,dec4,1.0837,DEC4 0.0022,DEC4 (model),biophysical
+slow_passive,0.9679515,0.78405,1.056623,3888,cc,carbon_pool,1.0837,Slow+passive,Carbon pool,accounting
+somsc,1.0837,1.0837,1.0837,3888,cc,carbon_pool,1.0837,somsc,Carbon pool,accounting
+somtc,1.079234,0.98594805,1.13086,3888,cc,carbon_pool,1.0837,somtc,Carbon pool,accounting
+totc,1.2589515,1.13981435,1.75732,3888,cc,carbon_pool,1.0837,totc,Carbon pool,accounting
+totsysc,1.296085,1.1226787,1.98878,3888,cc,carbon_pool,1.0837,totsysc,Carbon pool,accounting
+10,1.36987,0.8566175,2.423452,6480,cc,horizon_years,1.0837,10 yr,Horizon,accounting
+20,1.224979,1.0892953,1.6137745,6480,cc,horizon_years,1.0837,20 yr,Horizon,accounting
+30,1.0837,1.0837,1.0837,6480,cc,horizon_years,1.0837,30 yr,Horizon,accounting
+cf_conv,1.0837,1.0837,1.0837,6480,cc,counterfactual,1.0837,Conv.: fall cultivator/disk,Counterfactual,accounting
+cf_convplow,1.989835,1.2732313,3.4380805,6480,cc,counterfactual,1.0837,Conv.: plow,Counterfactual,accounting
+cf_convrt,0.576727,-0.3013295,1.0534443,6480,cc,counterfactual,1.0837,Conv. = RT,Counterfactual,accounting
+direct_ar5,1.9153595,1.0760095,4.13825,9720,cc,n2o_option,1.0837,"Direct N2O, GWP 265",N2O treatment,accounting
+none,1.0837,1.0837,1.0837,9720,cc,n2o_option,1.0837,SOC only,N2O treatment,accounting
+area,1.0837,1.0837,1.0837,9720,cc,functional_unit,1.0837,Per area,Functional unit,accounting
+bushel,1.0447935,0.4659425,1.2766715,9720,cc,functional_unit,1.0837,Per bushel (CI),Functional unit,accounting

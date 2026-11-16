@@ -1,0 +1,25 @@
+dimension,option_id,label,active,value,n2o_scope,notes
+carbon_pool,slow_passive,Slow + passive SOM C (som2c(2) + som3c),TRUE,nonactive_soilc_mg_c_ha,"",0-20 cm soil (EDEPTH = 0.20 m)
+carbon_pool,somsc,All soil organic C (somsc),TRUE,somsc_mg_c_ha,"",som1c(2) + som2c(2) + som3c; 0-20 cm soil
+carbon_pool,soil_surface,Soil + surface SOM C (som1c(1) + som1c(2) + som2c(1) + som2c(2) + som3c),FALSE,soil_surface_som_c_mg_c_ha,"",somsc plus surface microbial and slow SOM (som1c(1) + som2c(1)); 0-20 cm soil plus surface
+carbon_pool,totc,Minimum annual total non-living C (totc),TRUE,totc_mg_c_ha,"",0-20 cm soil plus surface litter and surface SOM; start-of-year value is the previous calendar year's minimum
+carbon_pool,somtc,All soil C (somtc),TRUE,somtc_mg_c_ha,"",somsc plus belowground structural and metabolic litter; 0-20 cm soil
+carbon_pool,totsysc,Total system C (totsysc),TRUE,totsysc_mg_c_ha,"",0-20 cm soil plus surface and live plant C
+horizon,h2,2 years,FALSE,2,"",Endpoint 2022
+horizon,h5,5 years,FALSE,5,"",Endpoint 2025
+horizon,h10,10 years,TRUE,10,"",Endpoint 2030
+horizon,h20,20 years,TRUE,20,"",Endpoint 2040
+horizon,h30,30 years,TRUE,30,"",Endpoint 2050
+horizon,h50,50 years,FALSE,50,"",Requires exp runs extended to 2070
+counterfactual,cf_conv,Conventional: field cultivator + fall field cultivator and tandem disk (default),TRUE,conv,"",Continuous conventional (D491 spring; F491 fall field cultivator and tandem disk) with the same N rate; history; and DEC4
+counterfactual,cf_convplow,Conventional: field cultivator + fall moldboard plow,TRUE,convplow,"",Continuous conventional (D491 spring; K491 fall moldboard plow; v1 cnt2_corn_sDfK) with the same N rate; history; and DEC4
+counterfactual,cf_convrt,Conventional: row cultivator + fall sweeps/tandem disks,TRUE,convrt,"",Continuous conventional (B491 spring; E491 fall sweeps/tandem disks; v1 cnt2_corn_sBfE) with the same N rate; history; and DEC4; same management as reduced till
+n2o,none,SOC only,TRUE,0,none,No N2O accounting
+n2o,direct_ar4,Direct N2O (GWP 298; AR4),FALSE,298,direct,DayCent nitrification + denitrification N2O
+n2o,direct_ar5,Direct N2O (GWP 265; AR5),TRUE,265,direct,DayCent nitrification + denitrification N2O
+n2o,direct_ar6,Direct N2O (GWP 273; AR6),FALSE,273,direct,DayCent nitrification + denitrification N2O
+n2o,direct_indirect_ar4,Direct + indirect N2O (GWP 298; AR4),FALSE,298,direct_indirect,Indirect: DayCent NO3 leaching x EF5 plus IPCC Tier 1 fertilizer volatilization x EF4
+n2o,direct_indirect_ar5,Direct + indirect N2O (GWP 265; AR5),FALSE,265,direct_indirect,Indirect: DayCent NO3 leaching x EF5 plus IPCC Tier 1 fertilizer volatilization x EF4
+n2o,direct_indirect_ar6,Direct + indirect N2O (GWP 273; AR6),FALSE,273,direct_indirect,Indirect: DayCent NO3 leaching x EF5 plus IPCC Tier 1 fertilizer volatilization x EF4
+functional_unit,area,Per area,TRUE,"","",Credit per hectare: project minus counterfactual stock change and N2O (Mg CO2e/ha/yr)
+functional_unit,bushel,Per bushel (carbon intensity),TRUE,"","",Credit per bushel = counterfactual minus project carbon intensity (each system's SOC change and N2O over its own corn bushels; kg CO2e/bu); area-equivalent = credit per bushel x project bushels/ha/yr

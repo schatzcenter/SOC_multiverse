@@ -1,0 +1,13 @@
+ensemble,group,share_of_variance_pct
+practice_cc,accounting,55.179788118477
+practice_cc,biophysical,28.0700437948446
+practice_cc,biophysical x accounting,16.236617685696
+practice_cc,remainder,0.513550400982502
+practice_nt,accounting,77.237386851136
+practice_nt,biophysical x accounting,14.8175689471437
+practice_nt,biophysical,7.48929761082933
+practice_nt,remainder,0.45574659089093
+practice_rt,accounting,69.5542067787821
+practice_rt,biophysical x accounting,18.5314911754865
+practice_rt,biophysical,10.9730373464439
+practice_rt,remainder,0.941264699287433

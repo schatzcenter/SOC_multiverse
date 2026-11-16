@@ -1,0 +1,11 @@
+0,type,FDCIC_2025_gCO2ebushel,gC_bushel,MgC_hayr_assumingNatlAveCornProd,ourmodelproduction_MgcornCphayr,gCO2e_hayr,MgCO2_hayr,MgC_hayr
+Natl Ave,soil carbon emissions/removals,NA,0,0,180,#VALUE!,#VALUE!,#VALUE!
+0,N2O (direct and indiredct),2918,0,0,180,1297342.8,1.2973428,0.353820764
+Conv,soil carbon emissions/removals,-1486,0,0,202.1,-741791.882,-0.741791882,-0.202306877
+0,N2O (direct and indiredct),2804,0,0,202.1,1399720.348,1.399720348,0.381741913
+NT,soil carbon emissions/removals,-1853,0,0,206.3,-944216.533,-0.944216533,-0.2575136
+0,N2O (direct and indiredct),2818,0,0,206.3,1435942.898,1.435942898,0.39162079
+RT,soil carbon emissions/removals,-316,0,0,193.3,-150874.516,-0.150874516,-0.041147595
+0,N2O (direct and indiredct),2946,0,0,193.3,1406570.646,1.406570646,0.383610176
+CC,soil carbon emissions/removals,-1486,0,0,188.9,-693342.338,-0.693342338,-0.189093365
+0,N2O (direct and indiredct),2944,0,0,188.9,1373620.352,1.373620352,0.374623732

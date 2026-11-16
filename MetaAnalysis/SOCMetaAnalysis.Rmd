@@ -1,0 +1,807 @@
+---
+title: "SOC Meta Analysis: empirical vs modeled net SOC"
+author: "Ryley Tauzer"
+date: "2024-10-30 (updated 2026-10-21)"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+## Setup
+
+All inputs are read relative to this file: the Global SOC Fractions dataset and
+your reference assignments from `Global_SOC_crops/`, and the DayCent model
+results from `../Project_CABBI/outputs/summary/` (rerun the Project_CABBI
+pipeline to refresh them). The previous version of this notebook is in
+`archive/SOCMetaAnalysis_2025-11-12.Rmd`.
+
+```{r libraries}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+# DATA NOT INCLUDED: the Global Soil Carbon Fractions: Regenerative + Conventional Croplands
+# dataset is not redistributed in this repository. It is available through LandEngine
+# (https://landengine.org/). Citation: A. M. Prairie, A. E. King, and M. F. Cotrufo, "Restoring
+# particulate and mineral-associated organic carbon through regenerative agriculture," Proc. Natl.
+# Acad. Sci., vol. 120, no. 21, p. e2217481120, May 2023, doi: 10.1073/pnas.2217481120.
+# Place globalsocfractions_crops.csv and the reference-assignment file
+# globalsocfractions_crops_filtered_top20_referenced.csv in Global_SOC_crops/.
+data_dir <- "Global_SOC_crops"
+model_dir <- file.path("..", "Project_CABBI", "outputs", "summary")
+shared_drive <- "G:/Shared drives/Bio+ Soil Carbon Accounting - ICCT/Technical Work"
+
+target_depth_cm <- 20  # matches the DayCent soil pools (fix.100 EDEPTH = 0.20 m)
+c_to_co2 <- 44 / 12
+
+practice_labels <- c(NT = "No-till", RT = "Reduced-till", CC = "Cover crop")
+practice_colors <- c(NT = "#2a78d6", RT = "#eb6834", CC = "#1baf7a")
+```
+
+## Global data
+
+Global Soil Carbon Fractions: Regenerative + Conventional Croplands
+
+- studies investigating the response of SOC pools to three soil management
+  practices: tillage, cropping intensification, and integrated crop-livestock
+- only points where the treatment of interest is isolated within the
+  experimental design
+
+```{r data}
+dd <- read.csv(file.path(data_dir, "globalsocfractions_crops.csv"), header = TRUE)
+
+# Corn systems with a reported SOC stock; keep every layer of each profile
+crop_species_cols <- grep("^crop[0-9]_species$", names(dd), value = TRUE)
+df <- dd %>%
+  filter(if_any(all_of(crop_species_cols), ~ !is.na(.) & . == "corn")) %>%
+  filter(!is.na(total_MgC_ha)) %>%
+  select(paper_id, sid, tid, soil_depth_upper, soil_depth_lower, location, duration,
+         tillage, tillage_details, crop_rotation_name, CC, avg_Nfert_rate, soil_BD,
+         total_MgC_ha, total_MgC_ha_sd, reps, total_gC_kg_soil, crop_scsc, perennial,
+         total_cropping_intensity)
+
+cat("Corn layers with SOC stocks:", nrow(df), " trials:",
+    nrow(distinct(df, paper_id, sid, tid)), "\n")
+```
+
+## Harmonize SOC stocks to 0-20 cm (fixed depth)
+
+Each trial (paper_id, sid, tid) is one sampled profile. Layers wholly above
+20 cm are summed; a layer that spans 20 cm contributes the share above 20 cm,
+assuming uniform SOC within the layer. Only profiles that start at 0 cm and
+reach at least 20 cm without gaps are kept.
+
+```{r fixed-depth-0-20}
+profiles <- df %>%
+  arrange(paper_id, sid, tid, soil_depth_upper) %>%
+  group_by(paper_id, sid, tid) %>%
+  mutate(thickness_cm = soil_depth_lower - soil_depth_upper,
+         contiguous = soil_depth_upper == lag(soil_depth_lower, default = 0)) %>%
+  ungroup()
+
+profile_checks <- profiles %>%
+  group_by(paper_id, sid, tid) %>%
+  summarise(starts_at_0 = min(soil_depth_upper) == 0,
+            max_depth = max(soil_depth_lower),
+            contiguous_to_20 = all(contiguous[soil_depth_upper < target_depth_cm]),
+            duplicated_layers = any(duplicated(paste(soil_depth_upper, soil_depth_lower))),
+            .groups = "drop") %>%
+  mutate(usable = starts_at_0 & max_depth >= target_depth_cm & contiguous_to_20 &
+           !duplicated_layers)
+
+top20 <- profiles %>%
+  semi_join(filter(profile_checks, usable), by = c("paper_id", "sid", "tid")) %>%
+  filter(soil_depth_upper < target_depth_cm) %>%
+  mutate(share_above_20 = pmin(1, (target_depth_cm - soil_depth_upper) / thickness_cm)) %>%
+  group_by(paper_id, sid, tid) %>%
+  summarise(MgC_ha_top20_fd = sum(total_MgC_ha * share_above_20), .groups = "drop")
+
+cat("Profiles usable for 0-20 cm:", nrow(top20), "of", nrow(profile_checks), "\n")
+```
+
+## Pair treatments with their reference (your manual assignments)
+
+`Reference` IDs come from your hand-assigned file: the reference (control)
+row ends in `R`, and every treatment row with the same ID is compared to it.
+Comparisons are classified by the change in tillage or cover crop as before.
+
+```{r pairs}
+ref_assign <- read.csv(file.path(data_dir, "globalsocfractions_crops_filtered_top20_referenced.csv"),
+                       header = TRUE, check.names = TRUE) %>%
+  filter(!is.na(Reference), Reference != "", Reference != "X") %>%
+  select(paper_id, sid, tid, Reference, MgC_ha_top20_file = MgC_ha_top20)
+
+trials <- profiles %>%
+  distinct(paper_id, sid, tid, location, duration, tillage, CC, crop_rotation_name,
+           avg_Nfert_rate) %>%
+  inner_join(ref_assign, by = c("paper_id", "sid", "tid")) %>%
+  left_join(top20, by = c("paper_id", "sid", "tid"))
+
+# The recomputed 0-20 cm stocks should match the stocks in the referenced file
+stopifnot(isTRUE(all.equal(trials$MgC_ha_top20_fd, trials$MgC_ha_top20_file)))
+
+ref_rows <- trials %>%
+  filter(grepl("R$", Reference)) %>%
+  transmute(ref_id = sub("R$", "", Reference),
+            ref_paper_id = paper_id, ref_sid = sid, ref_tid = tid,
+            tillage_ref = tillage, CC_ref = CC, MgC_ha_top20_fd_ref = MgC_ha_top20_fd)
+
+pairs <- trials %>%
+  filter(!grepl("R$", Reference)) %>%
+  mutate(ref_id = Reference) %>%
+  inner_join(ref_rows, by = "ref_id") %>%
+  mutate(TillChange = case_when(
+           tillage == "NT" & tillage_ref == "CT" ~ "NT",
+           tillage == "RT" & tillage_ref == "CT" ~ "RT",
+           tillage == tillage_ref ~ "NoChange",
+           TRUE ~ NA_character_),
+         CCChange = case_when(
+           CC == "yes" & CC_ref == "no" ~ "CC",
+           CC == CC_ref ~ "NoChange",
+           TRUE ~ NA_character_),
+         Change = case_when(
+           TillChange == "NoChange" & CCChange == "NoChange" ~ "Conv",
+           TillChange == "NoChange" & CCChange == "CC" ~ "CC",
+           TillChange == "NT" & CCChange == "NoChange" ~ "NT",
+           TillChange == "RT" & CCChange == "NoChange" ~ "RT",
+           TillChange != "NoChange" & CCChange != "NoChange" ~ "BothCCandTillChange",
+           TRUE ~ NA_character_),
+         delta_fd = MgC_ha_top20_fd - MgC_ha_top20_fd_ref,
+         rate_fd = delta_fd / duration)
+
+pairs %>% count(Change, name = "comparisons")
+```
+
+## Equivalent soil mass (studies reporting bulk density)
+
+No-till and other practices change bulk density, so a fixed 0-20 cm depth can
+contain different amounts of soil in the treatment and reference plots. For
+each pair where both profiles report bulk density for every layer, the
+treatment SOC is taken at the same soil mass as the reference's top 20 cm:
+
+- soil mass per layer (Mg/ha) = bulk density (g/cm3) x thickness (cm) x 100
+- reference: SOC and soil mass to 20 cm (identical to the fixed-depth value)
+- treatment: cumulative SOC interpolated linearly against cumulative soil mass
+  at the reference mass (uniform SOC within a layer, as in the fixed-depth
+  proration); if the treatment profile holds less soil than the reference
+  mass, the deepest layer's SOC per unit soil is extended (flagged)
+
+This uses total soil mass and linear interpolation; von Haden et al. (2020)
+use mineral soil mass and a monotone spline, which needs SOM data per layer.
+
+```{r equivalent-soil-mass}
+profile_mass <- profiles %>%
+  semi_join(filter(profile_checks, usable), by = c("paper_id", "sid", "tid")) %>%
+  group_by(paper_id, sid, tid) %>%
+  filter(all(!is.na(soil_BD))) %>%
+  arrange(soil_depth_upper, .by_group = TRUE) %>%
+  mutate(soil_mass_Mg_ha = soil_BD * thickness_cm * 100,
+         cum_mass = cumsum(soil_mass_Mg_ha),
+         cum_soc = cumsum(total_MgC_ha)) %>%
+  ungroup()
+
+# Soil mass in a profile's top 20 cm
+mass_to_20 <- profile_mass %>%
+  filter(soil_depth_upper < target_depth_cm) %>%
+  mutate(share_above_20 = pmin(1, (target_depth_cm - soil_depth_upper) / thickness_cm)) %>%
+  group_by(paper_id, sid, tid) %>%
+  summarise(ref_mass_20 = sum(soil_mass_Mg_ha * share_above_20), .groups = "drop")
+
+# SOC at a given cumulative soil mass in one profile
+soc_at_mass <- function(profile, target_mass) {
+  mass <- c(0, profile$cum_mass)
+  soc <- c(0, profile$cum_soc)
+  if (target_mass <= max(mass)) {
+    return(list(soc = approx(mass, soc, xout = target_mass)$y, extrapolated = FALSE))
+  }
+  deepest <- profile[nrow(profile), ]
+  extra <- (target_mass - max(mass)) * deepest$total_MgC_ha / deepest$soil_mass_Mg_ha
+  list(soc = max(soc) + extra, extrapolated = TRUE)
+}
+
+esm <- pairs %>%
+  inner_join(mass_to_20, by = c("ref_paper_id" = "paper_id", "ref_sid" = "sid",
+                                "ref_tid" = "tid")) %>%
+  semi_join(distinct(profile_mass, paper_id, sid, tid), by = c("paper_id", "sid", "tid"))
+
+esm_values <- lapply(seq_len(nrow(esm)), function(i) {
+  treatment <- profile_mass %>%
+    filter(paper_id == esm$paper_id[i], sid == esm$sid[i], tid == esm$tid[i])
+  soc_at_mass(treatment, esm$ref_mass_20[i])
+})
+esm <- esm %>%
+  mutate(MgC_ha_esm = vapply(esm_values, `[[`, numeric(1), "soc"),
+         esm_extrapolated = vapply(esm_values, `[[`, logical(1), "extrapolated"),
+         delta_esm = MgC_ha_esm - MgC_ha_top20_fd_ref,
+         rate_esm = delta_esm / duration) %>%
+  select(paper_id, sid, tid, ref_id, ref_mass_20, MgC_ha_esm, esm_extrapolated,
+         delta_esm, rate_esm)
+
+pairs <- pairs %>% left_join(esm, by = c("paper_id", "sid", "tid", "ref_id"))
+
+cat("Pairs with an equivalent-soil-mass estimate:", sum(!is.na(pairs$rate_esm)), "of",
+    nrow(pairs), "; extrapolated below the deepest layer:",
+    sum(pairs$esm_extrapolated, na.rm = TRUE), "\n")
+```
+
+## Average to one result per study
+
+When a paper reports more than one comparison for the same practice change,
+the comparisons are averaged so each study counts once. `delta_*` is the net
+SOC difference from the conventional reference (Mg C/ha) and `rate_*` is that
+difference divided by duration (Mg C/ha/yr), each averaged across comparisons.
+
+```{r study-averages}
+study <- pairs %>%
+  filter(Change %in% names(practice_labels)) %>%
+  group_by(paper_id, Change) %>%
+  summarise(sid = paste(unique(sid), collapse = ";"),
+            location = paste(unique(location), collapse = ";"),
+            n_comparisons = n(),
+            duration = mean(duration),
+            delta_fd = mean(delta_fd),
+            rate_fd = mean(rate_fd),
+            n_esm = sum(!is.na(rate_esm)),
+            delta_esm = if (any(!is.na(delta_esm))) mean(delta_esm, na.rm = TRUE) else NA_real_,
+            rate_esm = if (any(!is.na(rate_esm))) mean(rate_esm, na.rm = TRUE) else NA_real_,
+            .groups = "drop") %>%
+  relocate(paper_id, sid, location, duration, Change) %>%
+  mutate(Change = factor(Change, levels = names(practice_labels)))
+
+study %>% count(Change, name = "studies")
+```
+
+## Variance-weighted meta-analysis and heterogeneity
+
+Every comparison reports the SD of the SOC stock per layer and the number of
+replicates for both the practice and the reference plots, so each net SOC rate
+has a sampling variance:
+
+- 0-20 cm SD of a profile: layer SDs prorated like the stocks and combined
+  assuming the layers are perfectly correlated across plots (sum of SDs). This
+  gives the larger, conservative SD; assuming independent layers (root sum of
+  squares) is a sensitivity analysis.
+- variance of a rate = (SD_practice^2 / n_practice + SD_reference^2 / n_reference) / duration^2.
+  Comparisons that share a reference plot share its variance, so their errors
+  are correlated.
+- study-level effect: the mean of the study's comparisons, with the variance of
+  that mean including the shared-reference covariance.
+- ESM rates use the fixed-depth variances (the papers report SDs at fixed
+  depths only), so the ESM results are a sensitivity analysis.
+
+Each practice is fitted separately with a random-effects model (REML) and the
+Knapp-Hartung adjustment, which keeps the confidence interval honest with few
+studies. The multilevel model uses every comparison, with random effects for
+study and comparison within study, the shared-reference covariances, and
+cluster-robust (CR2) standard errors by study. The 95% prediction interval is
+the range of rates expected at a new site, and is the interval to compare with
+the spread of the model ensemble.
+
+The inputs are saved with the outputs. `empirical_soc_pairs.csv` has the 0-20 cm
+SDs (`sd_cor`, `sd_ind`; `_ref` for the reference) and replicates (`reps`,
+`reps_ref`) of each pair, and its rate variance (`var_rate`, `var_rate_ind`).
+`empirical_soc_study_means.csv` has the variance of each study's mean rate
+(`var_rate_fd`, `var_rate_esm`, `var_rate_fd_ind`).
+
+```{r meta-analysis}
+library(metafor)
+library(clubSandwich)
+
+top20_sd <- profiles %>%
+  semi_join(filter(profile_checks, usable), by = c("paper_id", "sid", "tid")) %>%
+  filter(soil_depth_upper < target_depth_cm) %>%
+  mutate(layer_sd = total_MgC_ha_sd * pmin(1, (target_depth_cm - soil_depth_upper) / thickness_cm)) %>%
+  group_by(paper_id, sid, tid) %>%
+  summarise(sd_cor = sum(layer_sd), sd_ind = sqrt(sum(layer_sd^2)), reps = first(reps),
+            .groups = "drop")
+
+# SDs (Mg C/ha, 0-20 cm) and replicates of both sides of each pair, and the
+# sampling variance of its rate (the same for fixed depth and ESM)
+pairs <- pairs %>%
+  left_join(top20_sd, by = c("paper_id", "sid", "tid")) %>%
+  left_join(rename(top20_sd, ref_paper_id = paper_id, ref_sid = sid, ref_tid = tid,
+                   sd_cor_ref = sd_cor, sd_ind_ref = sd_ind, reps_ref = reps),
+            by = c("ref_paper_id", "ref_sid", "ref_tid")) %>%
+  mutate(var_rate = (sd_cor^2 / reps + sd_cor_ref^2 / reps_ref) / duration^2,
+         var_rate_ind = (sd_ind^2 / reps + sd_ind_ref^2 / reps_ref) / duration^2)
+
+ma_pairs <- pairs %>%
+  filter(Change %in% names(practice_labels)) %>%
+  mutate(comparison = row_number())
+stopifnot(!anyNA(select(ma_pairs, sd_cor, sd_cor_ref, reps, reps_ref)))
+
+# Sampling covariance matrix of the rates in d; comparisons with the same
+# reference share its variance
+rate_vcov <- function(d, sd_col) {
+  v_trt <- d[[sd_col]]^2 / d$reps / d$duration^2
+  se_ref <- d[[paste0(sd_col, "_ref")]] / sqrt(d$reps_ref) / d$duration
+  V <- outer(d$ref_id, d$ref_id, "==") * outer(se_ref, se_ref)
+  diag(V) <- diag(V) + v_trt
+  V
+}
+
+# One effect and variance per study: the mean of its comparisons
+study_effects <- function(d, y_col, sd_col) {
+  d %>%
+    filter(!is.na(.data[[y_col]])) %>%
+    group_by(paper_id) %>%
+    group_modify(~ tibble(yi = mean(.x[[y_col]]), vi = sum(rate_vcov(.x, sd_col)) / nrow(.x)^2,
+                          n_comparisons = nrow(.x))) %>%
+    ungroup()
+}
+
+# Sampling variance of each study's mean rate, for the study table
+study_variance <- function(y_col, sd_col, name) {
+  purrr::map_dfr(names(practice_labels), function(ch) {
+    study_effects(filter(ma_pairs, Change == ch), y_col, sd_col) %>%
+      transmute(paper_id, Change = factor(ch, levels = names(practice_labels)), !!name := vi)
+  })
+}
+study <- study %>%
+  left_join(study_variance("rate_fd", "sd_cor", "var_rate_fd"), by = c("paper_id", "Change")) %>%
+  left_join(study_variance("rate_esm", "sd_cor", "var_rate_esm"), by = c("paper_id", "Change")) %>%
+  left_join(study_variance("rate_fd", "sd_ind", "var_rate_fd_ind"), by = c("paper_id", "Change"))
+
+summarise_fit <- function(fit, k_studies, k_comparisons, ci = c(fit$ci.lb, fit$ci.ub), i2 = fit$I2) {
+  pred <- predict(fit)
+  tibble(studies = k_studies, comparisons = k_comparisons, estimate = as.numeric(fit$b),
+         ci_lb = ci[1], ci_ub = ci[2], pi_lb = pred$pi.lb, pi_ub = pred$pi.ub,
+         tau = sqrt(sum(if (inherits(fit, "rma.mv")) fit$sigma2 else fit$tau2)),
+         I2 = i2, Q = fit$QE, Q_p = fit$QEp)
+}
+
+fit_study_level <- function(d, y_col, sd_col) {
+  s <- study_effects(d, y_col, sd_col)
+  summarise_fit(rma(yi, vi, data = s, method = "REML", test = "knha"),
+                nrow(s), sum(s$n_comparisons))
+}
+
+# I2 of a multilevel model (share of total variance from both random effects)
+multilevel_i2 <- function(fit) {
+  W <- solve(fit$V)
+  X <- model.matrix(fit)
+  P <- W - W %*% X %*% solve(t(X) %*% W %*% X) %*% t(X) %*% W
+  100 * sum(fit$sigma2) / (sum(fit$sigma2) + (fit$k - fit$p) / sum(diag(P)))
+}
+
+fit_multilevel <- function(d, y_col, sd_col) {
+  d <- filter(d, !is.na(.data[[y_col]]))
+  fit <- rma.mv(d[[y_col]], rate_vcov(d, sd_col), random = ~ 1 | paper_id / comparison,
+                data = d, method = "REML", test = "t")
+  robust <- conf_int(fit, vcov = "CR2", cluster = d$paper_id)
+  summarise_fit(fit, n_distinct(d$paper_id), nrow(d), c(robust$CI_L, robust$CI_U),
+                multilevel_i2(fit))
+}
+
+analyses <- tribble(
+  ~analysis,                                         ~fit,             ~y_col,     ~sd_col,
+  "Study-level random effects, fixed depth",         fit_study_level,  "rate_fd",  "sd_cor",
+  "Study-level random effects, ESM",                 fit_study_level,  "rate_esm", "sd_cor",
+  "Multilevel, all comparisons, fixed depth",        fit_multilevel,   "rate_fd",  "sd_cor",
+  "Study-level, independent-layer SD, fixed depth",  fit_study_level,  "rate_fd",  "sd_ind")
+
+meta_results <- tidyr::expand_grid(Change = names(practice_labels), analyses) %>%
+  mutate(result = purrr::pmap(list(Change, fit, y_col, sd_col), function(ch, f, y, s)
+    f(filter(ma_pairs, Change == ch), y, s))) %>%
+  select(Change, analysis, result) %>%
+  tidyr::unnest(result) %>%
+  bind_rows(study %>%
+              pivot_longer(c(rate_fd, rate_esm), names_to = "method", values_to = "rate") %>%
+              filter(!is.na(rate)) %>%
+              group_by(Change = as.character(Change),
+                       analysis = paste0("Unweighted study mean, ",
+                                         ifelse(method == "rate_fd", "fixed depth", "ESM"))) %>%
+              summarise(studies = n(), comparisons = sum(n_comparisons), estimate = mean(rate),
+                        ci_lb = estimate - qt(0.975, studies - 1) * sd(rate) / sqrt(studies),
+                        ci_ub = estimate + qt(0.975, studies - 1) * sd(rate) / sqrt(studies),
+                        .groups = "drop")) %>%
+  mutate(Change = factor(Change, levels = names(practice_labels))) %>%
+  mutate(analysis = factor(analysis, levels = c(analyses$analysis,
+                                                "Unweighted study mean, fixed depth",
+                                                "Unweighted study mean, ESM"))) %>%
+  arrange(Change, analysis)
+
+write.csv(meta_results, "meta_analysis_results.csv", row.names = FALSE)
+
+knitr::kable(meta_results %>% mutate(across(c(estimate:tau, Q), ~ round(.x, 3)),
+                                     I2 = round(I2, 1), Q_p = signif(Q_p, 2)),
+             caption = paste("Net SOC rate (Mg C/ha/yr). CI: 95% confidence interval of the mean;",
+                             "PI: 95% prediction interval for a new site; tau: between-study SD."))
+```
+
+```{r forest-plot, fig.width=9, fig.height=10}
+forest_studies <- purrr::map_dfr(names(practice_labels), function(ch) {
+  study_effects(filter(ma_pairs, Change == ch), "rate_fd", "sd_cor") %>%
+    mutate(Change = ch)
+}) %>%
+  left_join(distinct(study, paper_id, Change = as.character(Change), duration),
+            by = c("paper_id", "Change")) %>%
+  mutate(label = paste0("Paper ", paper_id, " (", round(duration), " yr)"),
+         ci_lb = yi - 1.96 * sqrt(vi), ci_ub = yi + 1.96 * sqrt(vi))
+
+forest_pooled <- meta_results %>%
+  filter(analysis == "Study-level random effects, fixed depth") %>%
+  mutate(Change = as.character(Change), label = "Random-effects mean")
+
+# Rows run from the shortest study at the top to the pooled mean at the bottom
+forest_data <- bind_rows(forest_studies, rename(forest_pooled, yi = estimate)) %>%
+  mutate(row = ifelse(label == "Random-effects mean", "pooled", "study"),
+         Change = factor(Change, levels = names(practice_labels))) %>%
+  arrange(Change, row, desc(duration)) %>%
+  mutate(key = factor(paste(Change, label), levels = unique(paste(Change, label))))
+
+ggplot(forest_data, aes(x = yi, y = key, color = Change)) +
+  geom_vline(xintercept = 0, color = "#b5b4ae") +
+  geom_errorbar(data = filter(forest_data, row == "pooled"),
+                aes(xmin = pi_lb, xmax = pi_ub), orientation = "y", width = 0, linewidth = 0.6,
+                linetype = "dashed") +
+  geom_errorbar(aes(xmin = ci_lb, xmax = ci_ub), orientation = "y", width = 0, linewidth = 0.7) +
+  geom_point(aes(size = row, shape = row)) +
+  scale_y_discrete(labels = setNames(forest_data$label, forest_data$key)) +
+  scale_size_manual(values = c(pooled = 3.5, study = 2), guide = "none") +
+  scale_shape_manual(values = c(pooled = 18, study = 16), guide = "none") +
+  scale_color_manual(values = practice_colors, guide = "none") +
+  facet_grid(Change ~ ., scales = "free_y", space = "free_y",
+             labeller = labeller(Change = practice_labels)) +
+  labs(x = expression(Net~SOC~rate~(Mg~C~ha^-1~yr^-1)), y = NULL,
+       caption = paste("Fixed depth 0-20 cm, one effect per study with its 95% CI.",
+                       "\nDiamond: random-effects mean (95% CI, Knapp-Hartung);",
+                       "dashed: 95% prediction interval for a new site.")) +
+  theme_minimal() +
+  theme(panel.grid.minor = element_blank(), plot.caption = element_text(hjust = 0))
+```
+
+## DayCent model results (current Project_CABBI pipeline)
+
+The default model run is UAN20, site-specific history, continuous management,
+observed weather, and the default DEC4 (0.0025). Its net SOC is the somsc
+difference from the default continuous conventional at the same N rate and
+history (`cf_conv`), divided by the years since 2020, in Mg C/ha/yr; this
+mirrors the empirical treatment-minus-control rate. Sensitivity points use the
+30-year SOC-only, per-area credits from `accounting_results.csv` (somsc,
+`cf_conv`, default DEC4), converted back to Mg C. They include the set-aside
+scenarios (other N rates, cycling and adopt-then-revert patterns), which are
+credited against the default conventional. The alternative conventional
+definitions (`convplow`, `convrt`) are counterfactuals, not practices, and are
+left out here.
+
+```{r model}
+annual <- read.csv(file.path(model_dir, "daycent_annual_summary.csv"))
+
+model_default <- annual %>%
+  filter(conservation_practice %in% c("conv", tolower(names(practice_labels))),
+         n_rate == "n_obs", historic_land_use == "hlu_site", cycling_frequency == "cont",
+         weather_sequence == "w_obs", dec4 == "dec4_def", year >= 2020, year <= 2050) %>%
+  select(conservation_practice, year, somsc_mg_c_ha)
+conv <- model_default %>% filter(conservation_practice == "conv") %>%
+  select(year, conv_somsc = somsc_mg_c_ha)
+model_curve <- model_default %>%
+  filter(conservation_practice != "conv") %>%
+  inner_join(conv, by = "year") %>%
+  mutate(Change = toupper(conservation_practice),
+         years = year - 2020,
+         diff_mg_c_ha = somsc_mg_c_ha - conv_somsc) %>%
+  group_by(Change) %>%
+  mutate(diff_mg_c_ha = diff_mg_c_ha - diff_mg_c_ha[years == 0]) %>%
+  ungroup() %>%
+  filter(years > 0) %>%
+  mutate(rate_model = diff_mg_c_ha / years,
+         Change = factor(Change, levels = names(practice_labels)))
+
+stopifnot(nrow(model_curve) == 30 * length(practice_labels))
+model_30 <- model_curve %>% filter(years == 30) %>% select(Change, rate_model)
+
+# Sensitivity: other N rates, histories, cycling and reversion (30 years)
+credits <- read.csv(file.path(model_dir, "accounting_results.csv"))
+model_sensitivity <- credits %>%
+  filter(carbon_pool == "somsc", counterfactual == "cf_conv", horizon_years == 30,
+         n2o_option == "none", functional_unit == "area", weather_sequence == "w_obs",
+         dec4 == "dec4_def") %>%
+  mutate(Change = factor(toupper(conservation_practice), levels = names(practice_labels)),
+         rate_model = soc_benefit_mg_co2e_ha_yr / c_to_co2,
+         PointCategory = case_when(
+           n_rate == "n_obs" & historic_land_use == "hlu_site" & cycling_frequency == "cont" ~ "Modeled",
+           n_rate != "n_obs" & historic_land_use == "hlu_site" & cycling_frequency == "cont" ~ "Modeled - Alt N Fert Rate",
+           n_rate == "n_obs" & historic_land_use != "hlu_site" & cycling_frequency == "cont" ~ "Modeled - Alt HLU",
+           n_rate == "n_obs" & historic_land_use == "hlu_site" & grepl("^rev", cycling_frequency) ~ "Modeled - Cycle",
+           n_rate == "n_obs" & historic_land_use == "hlu_site" & grepl("^adopt", cycling_frequency) ~ "Modeled - Revert",
+           TRUE ~ NA_character_)) %>%
+  filter(!is.na(PointCategory)) %>%
+  select(Change, PointCategory, n_rate, historic_land_use, cycling_frequency, rate_model)
+
+# The default sensitivity point must equal the default curve at 30 years
+stopifnot(isTRUE(all.equal(
+  model_sensitivity %>% filter(PointCategory == "Modeled") %>% arrange(Change) %>% pull(rate_model),
+  model_30 %>% arrange(Change) %>% pull(rate_model), tolerance = 1e-4)))  # credits are written rounded
+
+```
+
+## Match each study to the model at the same duration
+
+The model's per-year rate changes with time, so each study is compared with
+the default model rate at the study's duration. Studies longer than the
+30-year model run have no matched value.
+
+```{r matched}
+study <- study %>%
+  mutate(years = round(duration)) %>%
+  left_join(model_curve %>% select(Change, years, rate_model_matched = rate_model),
+            by = c("Change", "years"))
+
+cat("Studies with a matched model value:", sum(!is.na(study$rate_model_matched)), "of",
+    nrow(study), "\n")
+```
+
+## Compare empirical and modeled net SOC
+
+```{r compare-boxplot, fig.width=10, fig.height=5.5}
+study_long <- study %>%
+  pivot_longer(c(rate_fd, rate_esm), names_to = "method", values_to = "rate") %>%
+  filter(!is.na(rate)) %>%
+  mutate(method = factor(ifelse(method == "rate_fd", "Fixed depth (0-20 cm)",
+                                "Equivalent soil mass"),
+                         levels = c("Fixed depth (0-20 cm)", "Equivalent soil mass")))
+
+study_counts <- study_long %>% count(method, Change)
+
+sensitivity_colors <- c("Modeled - Alt N Fert Rate" = "#eda100", "Modeled - Alt HLU" = "#6250d6",
+                        "Modeled - Cycle" = "#1baf7a", "Modeled - Revert" = "#e87ba4")
+
+ggplot(study_long, aes(x = Change, y = rate)) +
+  geom_hline(yintercept = 0, color = "#b5b4ae") +
+  geom_boxplot(outlier.shape = NA, color = "#52514e", width = 0.55) +
+  geom_point(color = "#52514e", alpha = 0.6, position = position_jitter(width = 0.08, seed = 1)) +
+  stat_summary(fun = mean, geom = "point", shape = 23, size = 3, fill = "black") +
+  geom_point(data = model_sensitivity %>% filter(PointCategory != "Modeled"),
+             aes(y = rate_model, color = PointCategory),
+             position = position_nudge(x = 0.38), size = 1.8) +
+  geom_point(data = model_30, aes(y = rate_model), color = "#e34948", size = 4,
+             position = position_nudge(x = 0.38)) +
+  geom_text(data = study_counts, aes(y = -Inf, label = paste0("n=", n)), vjust = -0.5,
+            size = 3, color = "#52514e") +
+  facet_wrap(~method) +
+  scale_x_discrete(labels = practice_labels) +
+  scale_color_manual(name = "30-yr model sensitivity", values = sensitivity_colors) +
+  labs(x = NULL, y = expression(Net~SOC~accumulation~(Mg~C~ha^-1~yr^-1)),
+       caption = paste("Box/points: study-level empirical rates (black diamond = mean).",
+                       "Red: default model, 30 years.",
+                       "n = studies after averaging comparisons within each paper.")) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+```{r compare-duration, fig.width=11, fig.height=5.2}
+reference_colors <- c("Default DayCent model" = "#d03b3b")
+
+duration_plot <- ggplot(study_long, aes(x = duration, y = rate)) +
+  geom_hline(yintercept = 0, color = "#b5b4ae") +
+  geom_line(data = model_curve, aes(x = years, y = rate_model, color = "Default DayCent model"),
+            linewidth = 1) +
+  geom_point(data = model_curve %>% filter(years == 30),
+             aes(x = years, y = rate_model, color = "Default DayCent model"), size = 2.5) +
+  geom_point(aes(shape = method), color = "#3d3c39", size = 2.2, stroke = 0.8) +
+  facet_wrap(~Change, labeller = labeller(Change = practice_labels)) +
+  scale_y_continuous(expand = expansion(mult = c(0.05, 0.14))) +
+  scale_shape_manual(name = NULL, values = c("Fixed depth (0-20 cm)" = 16,
+                                             "Equivalent soil mass" = 1)) +
+  scale_color_manual(name = NULL, values = reference_colors) +
+  labs(x = "Study duration / years since adoption",
+       y = expression(Annualized~net~SOC~(Mg~C~ha^-1~yr^-1)),
+       caption = paste("Points: study-level empirical rates. Red: default DayCent model",
+                       "(somsc vs continuous conventional, same N rate) at each year since 2020;",
+                       "dot = 30 years.",
+                       "Multiply by 44/12 for t CO2e/ha/yr.")) +
+  theme_minimal() +
+  theme(legend.position = "bottom", panel.grid.minor = element_blank(),
+        plot.caption = element_text(hjust = 0))
+duration_plot
+ggsave("duration_vs_net_soc.png", duration_plot, width = 11, height = 5.2, dpi = 200, bg = "white")
+```
+
+```{r compare-matched, fig.width=7, fig.height=6.5}
+matched_long <- study_long %>%
+  filter(!is.na(rate_model_matched))
+
+axis_limits <- range(c(matched_long$rate, matched_long$rate_model_matched))
+
+ggplot(matched_long, aes(x = rate, y = rate_model_matched, color = Change)) +
+  geom_abline(slope = 1, intercept = 0, color = "#b5b4ae") +
+  geom_point(aes(shape = method), size = 2.5) +
+  scale_color_manual(values = practice_colors, labels = practice_labels, name = NULL) +
+  scale_shape_manual(name = NULL, values = c("Fixed depth (0-20 cm)" = 16,
+                                             "Equivalent soil mass" = 1)) +
+  coord_equal(xlim = axis_limits, ylim = axis_limits) +
+  labs(x = "Empirical net SOC (Mg C/ha/yr)", y = "Default model at the same duration (Mg C/ha/yr)",
+       caption = "Grey line: 1:1. Points above it: model higher than the study; below: model lower.") +
+  theme_minimal()
+```
+
+## Summary table
+
+```{r summary-table}
+summary_table <- study_long %>%
+  group_by(method, Change) %>%
+  summarise(studies = n(),
+            mean = mean(rate), median = median(rate),
+            q25 = quantile(rate, 0.25), q75 = quantile(rate, 0.75),
+            mean_duration = mean(duration), .groups = "drop") %>%
+  left_join(model_30 %>% rename(model_30yr = rate_model), by = "Change") %>%
+  left_join(matched_long %>% group_by(method, Change) %>%
+              summarise(model_matched_mean = mean(rate_model_matched),
+                        empirical_matched_mean = mean(rate), matched_studies = n(),
+                        .groups = "drop"),
+            by = c("method", "Change")) %>%
+  mutate(across(c(mean, median, q25, q75, model_30yr, model_matched_mean,
+                  empirical_matched_mean), ~ round(.x, 3)),
+         mean_t_co2e = round(mean * c_to_co2, 3),
+         model_30yr_t_co2e = round(model_30yr * c_to_co2, 3))
+
+knitr::kable(summary_table,
+             caption = "Net SOC accumulation, Mg C/ha/yr (t CO2e/ha/yr = Mg C x 44/12)")
+```
+
+```{r save-outputs}
+write.csv(pairs, "empirical_soc_pairs.csv", row.names = FALSE)
+write.csv(study, "empirical_soc_study_means.csv", row.names = FALSE)
+write.csv(summary_table, "empirical_vs_model_summary.csv", row.names = FALSE)
+```
+
+## Covariates for mixed-effects models
+
+Each comparison is joined to site, experiment, management, and soil variables
+from the original dataset, so the net SOC change can be modeled with
+covariates (for example, a mixed model with a random intercept for study).
+
+- Site and experiment variables (climate, location, design, SOC method) are
+  constant within a trial and taken from the treatment trial.
+- Management variables are given for the treatment and, with the suffix
+  `_ref`, for its reference, plus differences where useful.
+- N fertilizer: `avg_Nfert_rate` is empty in the dataset, so `corn_Nfert_rate`
+  is the rate reported for the corn crop and `mean_crop_Nfert_rate` the mean of
+  the rates reported for the rotation's crops (kg N ha⁻¹ yr⁻¹; not a
+  rotation-weighted annual rate).
+- Layer variables (bulk density, pH, texture) are 0-20 cm means weighted by
+  layer thickness within 0-20 cm; MAOC and POC stocks are prorated to 0-20 cm
+  like total SOC.
+
+`empirical_soc_pairs_covariates.csv` has one row per comparison (including the
+rotation-only comparisons, `Change == "Conv"`), and
+`empirical_soc_study_covariates.csv` one row per study per practice (numeric
+covariates averaged and text covariates listed across the study's
+comparisons). `empirical_covariates_dictionary.csv` defines each column.
+
+```{r covariates}
+pair_keys <- bind_rows(distinct(pairs, paper_id, sid, tid),
+                       distinct(pairs, paper_id = ref_paper_id, sid = ref_sid, tid = ref_tid)) %>%
+  distinct()
+
+# N fertilizer rate of the corn crop and mean over the rotation's crops
+species_cols <- paste0("crop", 1:8, "_species")
+n_cols <- paste0("crop", 1:5, "_Nfert_rate")
+trial_rows <- dd %>% semi_join(pair_keys, by = c("paper_id", "sid", "tid"))
+corn_index <- apply(as.matrix(trial_rows[species_cols]), 1, function(r) match("corn", r))
+n_rates <- as.matrix(trial_rows[n_cols])
+trial_rows$corn_Nfert_rate <- ifelse(corn_index <= length(n_cols),
+                                     n_rates[cbind(seq_len(nrow(n_rates)), pmin(corn_index, length(n_cols)))],
+                                     NA_real_)
+trial_rows$mean_crop_Nfert_rate <- ifelse(rowSums(!is.na(n_rates)) > 0, rowMeans(n_rates, na.rm = TRUE), NA_real_)
+
+wmean <- function(x, w) if (all(is.na(x))) NA_real_ else weighted.mean(x, w, na.rm = TRUE)
+prorated_sum <- function(x, share) if (anyNA(x)) NA_real_ else sum(x * share)
+
+trial_cov <- trial_rows %>%
+  mutate(w_0_20 = pmax(0, pmin(soil_depth_lower, target_depth_cm) - soil_depth_upper),
+         share_0_20 = w_0_20 / (soil_depth_lower - soil_depth_upper)) %>%
+  group_by(paper_id, sid, tid) %>%
+  summarise(across(c(tillage, tillage_details, tillage_depth, tillage_freq, crop_rotation_name,
+                     total_cropping_intensity, crop_diversity, perennial, CC, crop_scsc, rotation_scsc,
+                     livestock_integration, corn_Nfert_rate, mean_crop_Nfert_rate), first),
+            bd_0_20 = wmean(soil_BD[w_0_20 > 0], w_0_20[w_0_20 > 0]),
+            ph_0_20 = wmean(soil_pH[w_0_20 > 0], w_0_20[w_0_20 > 0]),
+            sand_0_20 = wmean(per_sand[w_0_20 > 0], w_0_20[w_0_20 > 0]),
+            silt_0_20 = wmean(per_silt[w_0_20 > 0], w_0_20[w_0_20 > 0]),
+            clay_0_20 = wmean(per_clay[w_0_20 > 0], w_0_20[w_0_20 > 0]),
+            maoc_MgC_ha_0_20 = prorated_sum(maoc_MgC_ha[w_0_20 > 0], share_0_20[w_0_20 > 0]),
+            poc_MgC_ha_0_20 = prorated_sum(poc_MgC_ha[w_0_20 > 0], share_0_20[w_0_20 > 0]),
+            sampled_depth_cm = max(soil_depth_lower),
+            layers_0_20 = sum(w_0_20 > 0),
+            .groups = "drop")
+
+site_cov <- trial_rows %>%
+  group_by(paper_id, sid, tid) %>%
+  summarise(across(c(author, year, country, continent, state, location, lat_x, long_x, MAT, MAP, PET, climate,
+                     soil_type, field_history, year_est, exp_design, exp_arrangement, reps, plot_width,
+                     plot_length, SOC_determination_method), first),
+            .groups = "drop") %>%
+  rename(publication_year = year, latitude = lat_x, longitude = long_x) %>%
+  mutate(plot_area_m2 = plot_width * plot_length) %>%
+  select(-plot_width, -plot_length)
+
+pairs_cov <- pairs %>%
+  select(paper_id, sid, tid, ref_paper_id, ref_sid, ref_tid, ref_id, Change, duration,
+         soc_0_20 = MgC_ha_top20_fd, soc_0_20_ref = MgC_ha_top20_fd_ref, delta_fd, rate_fd,
+         soc_esm = MgC_ha_esm, esm_extrapolated, delta_esm, rate_esm, var_rate, var_rate_ind) %>%
+  left_join(site_cov, by = c("paper_id", "sid", "tid")) %>%
+  left_join(trial_cov, by = c("paper_id", "sid", "tid")) %>%
+  left_join(rename_with(trial_cov, ~ paste0(.x, "_ref"), -c(paper_id, sid, tid)),
+            by = c("ref_paper_id" = "paper_id", "ref_sid" = "sid", "ref_tid" = "tid")) %>%
+  mutate(same_rotation = crop_rotation_name == crop_rotation_name_ref,
+         corn_Nfert_diff = corn_Nfert_rate - corn_Nfert_rate_ref,
+         bd_0_20_diff = bd_0_20 - bd_0_20_ref,
+         maoc_share_0_20_ref = maoc_MgC_ha_0_20_ref / (maoc_MgC_ha_0_20_ref + poc_MgC_ha_0_20_ref))
+stopifnot(nrow(pairs_cov) == nrow(pairs))
+
+# One row per study per practice: numeric covariates averaged, text listed
+collapse_text <- function(x) { x <- unique(na.omit(as.character(x))); if (length(x)) paste(x, collapse = "; ") else NA_character_ }
+mean_or_na <- function(x) if (all(is.na(x))) NA_real_ else mean(x, na.rm = TRUE)
+study_cov <- pairs_cov %>%
+  filter(Change %in% names(practice_labels)) %>%
+  select(-c(tid, ref_paper_id, ref_sid, ref_tid, ref_id, duration, delta_fd, rate_fd, delta_esm, rate_esm,
+            var_rate, var_rate_ind, soc_esm, esm_extrapolated)) %>%
+  group_by(paper_id, Change) %>%
+  summarise(across(where(is.numeric), mean_or_na),
+            across(where(is.logical), ~ mean(.x, na.rm = TRUE)),
+            across(where(is.character), collapse_text), .groups = "drop") %>%
+  rename(sids = sid)
+study_cov <- study %>%
+  mutate(Change = as.character(Change)) %>%
+  left_join(study_cov %>% select(-any_of(c("location"))), by = c("paper_id", "Change"))
+stopifnot(nrow(study_cov) == nrow(study))
+
+dictionary <- tribble(
+  ~column, ~description, ~units,
+  "paper_id / sid / tid", "Study, site, and treatment IDs in the Global SOC Fractions dataset", "",
+  "ref_*", "IDs of the reference (conventional) trial; ref_id is the hand-assigned reference group", "",
+  "Change", "Practice change relative to the reference (NT, RT, CC; Conv = rotation only, excluded from analyses)", "",
+  "duration", "Years since the treatments were established", "yr",
+  "soc_0_20, soc_0_20_ref", "SOC stock, 0-20 cm, treatment and reference", "Mg C ha-1",
+  "delta_fd, rate_fd", "Net SOC change (treatment minus reference), fixed depth; and divided by duration", "Mg C ha-1; Mg C ha-1 yr-1",
+  "soc_esm, delta_esm, rate_esm", "Treatment SOC at the reference's 0-20 cm soil mass; net change; rate", "Mg C ha-1; Mg C ha-1 yr-1",
+  "esm_extrapolated", "ESM needed extrapolation below the treatment's deepest layer", "",
+  "var_rate, var_rate_ind", "Sampling variance of the rate (layer SDs summed / combined as independent)", "(Mg C ha-1 yr-1)^2",
+  "author, publication_year, country, continent, state, location, latitude, longitude", "Study and site", "",
+  "MAT, MAP, PET", "Mean annual temperature, precipitation, potential evapotranspiration", "deg C; mm yr-1; mm yr-1",
+  "climate, soil_type, field_history", "Climate class, soil type as reported, land use before the experiment", "",
+  "year_est, exp_design, exp_arrangement, reps, plot_area_m2", "Experiment establishment year, design, replicates, plot area", "yr; ; ; ; m2",
+  "SOC_determination_method", "Dry combustion or wet oxidation", "",
+  "tillage, tillage_details, tillage_depth, tillage_freq", "Tillage system, implements, depth, passes per year", "; ; cm; yr-1",
+  "crop_rotation_name, total_cropping_intensity, crop_diversity, perennial, CC, crop_scsc, rotation_scsc", "Rotation, cropping intensity, species count, perennial and cover crop indicators", "",
+  "livestock_integration", "Crop-livestock integration indicator", "",
+  "corn_Nfert_rate", "N fertilizer rate reported for the corn crop", "kg N ha-1 yr-1",
+  "mean_crop_Nfert_rate", "Mean of the N rates reported for the rotation's crops (not rotation-weighted)", "kg N ha-1 yr-1",
+  "bd_0_20, ph_0_20, sand_0_20, silt_0_20, clay_0_20", "Thickness-weighted 0-20 cm mean bulk density, pH, texture", "g cm-3; ; %; %; %",
+  "maoc_MgC_ha_0_20, poc_MgC_ha_0_20", "Mineral-associated and particulate organic C stocks prorated to 0-20 cm", "Mg C ha-1",
+  "sampled_depth_cm, layers_0_20", "Deepest sampled depth; number of layers within 0-20 cm", "cm; ",
+  "*_ref", "The same management or soil variable for the reference trial", "",
+  "same_rotation", "Treatment and reference have the same crop rotation (study file: share of comparisons)", "",
+  "corn_Nfert_diff, bd_0_20_diff", "Treatment minus reference corn N rate and 0-20 cm bulk density", "kg N ha-1 yr-1; g cm-3",
+  "maoc_share_0_20_ref", "MAOC share of MAOC + POC in the reference, 0-20 cm", "fraction",
+  "n_comparisons, n_esm (study file)", "Comparisons averaged into the study point; those with ESM", ""
+)
+
+write.csv(pairs_cov, "empirical_soc_pairs_covariates.csv", row.names = FALSE)
+write.csv(study_cov, "empirical_soc_study_covariates.csv", row.names = FALSE)
+write.csv(dictionary, "empirical_covariates_dictionary.csv", row.names = FALSE)
+
+# Coverage of each covariate among the 54 NT/RT/CC comparisons
+coverage <- pairs_cov %>%
+  filter(Change %in% names(practice_labels)) %>%
+  summarise(across(everything(), ~ round(100 * mean(!is.na(.x) & as.character(.x) != "")))) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "percent_available") %>%
+  arrange(percent_available)
+knitr::kable(coverage %>% filter(percent_available < 100),
+             caption = "Covariates not available for every NT/RT/CC comparison (% of 54 comparisons)")
+```
+
+## Notes
+
+- Comparisons are used as assigned in the reference file, including pairs whose
+  rotation differs from the reference beyond the practice change.
+- Durations are years since the practice began; dividing the paired difference
+  by duration assumes treatment and reference started from the same SOC.
+- The empirical studies are global, while the model is one Illinois site.
+- The archived notebook (`archive/SOCMetaAnalysis_2025-11-12.Rmd`) keeps the
+  earlier exploratory sections (GRACEnet, literature values, the von Haden ESM
+  example, and the original plots).

@@ -1,0 +1,24 @@
+# DayCent executables, parameter files, and run outputs (not redistributed)
+*.exe
+*.100
+sitepar.in
+soils.in
+*.bin
+*.lis
+*.log
+Project_CABBI/sites/enfarm/outputs/
+
+# Empirical dataset and files derived from it (not redistributed)
+*globalsocfractions*
+MetaAnalysis/empirical_soc_*.csv
+MetaAnalysis/empirical_covariates_dictionary.csv
+MetaAnalysis/empirical_vs_model_summary.csv
+MetaAnalysis/meta_analysis_results.csv
+
+# R and OS clutter
+.Rhistory
+.RData
+.Rproj.user/
+Rplots.pdf
+.DS_Store
+~$*
