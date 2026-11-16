@@ -26,7 +26,6 @@ This folder starts the reproducible scenario metadata workflow for the SOC credi
 - `plot_tornado.R`: default-centred level effects (Figure 2).
 - `plot_variance_groups.R`: Figure 3.
 - `plot_ensemble_distribution.R`: distribution of all specifications per practice, with summary statistics.
-- `shift_cover_crop_operations.R`, `switch_cover_crop_to_rye.R`, `switch_cc_termination_to_herbicide.R`: one-time edits already applied to the included schedules; kept for provenance.
 
 ## How to update levels
 
@@ -85,58 +84,15 @@ Generate the 5- and 10-year cycle templates with:
 Rscript analysis/build_cycle_schedules.R
 ```
 
-For an N-year cycle, years 1 through N-1 use the conservation-practice events from the v1 template; year N uses the conventional events. For CC, the conventional year also starts with the cover-crop termination events (`CULT HC` and `LAST` on day 117, with that year's `CULT D491` moved to day 118; see "Cover crop termination" below), so the rye planted in the previous year is terminated. The cycle repeats through 2050. The script writes NT, RT, and CC schedules to `sites/enfarm/v2schedules/` and refuses to overwrite an existing target file.
+For an N-year cycle, years 1 through N-1 use the conservation-practice events from the v1 template; year N uses the conventional events. For CC, the conventional year also starts with the cover-crop termination events (`CULT HC` and `LAST` on day 117, with that year's `CULT D491` moved to day 118; see "Cover crop management" below), so the rye planted in the previous year is terminated. The cycle repeats through 2050. The script writes NT, RT, and CC schedules to `sites/enfarm/v2schedules/` and refuses to overwrite an existing target file.
 
 Each cycle schedule is reused across all histories (the history is the preceding `cnt` run); `build_fertilizer_schedules.R` adds its UAN10 and UAN30 variants.
 
-## Cover crop timing after harvest
+## Cover crop management
 
-Every cover crop year harvests corn on day 282, runs the fall field cultivator and tandem disk (`CULT F491`) on day 283, and plants the cover crop (`CROP`, `PLTM`; barley `BAR` when this script was written, now cereal rye `CCRYE`, see below) on day 284:
-
-```sh
-Rscript analysis/shift_cover_crop_operations.R
-```
-
-The fall field cultivator and tandem disk pass used to be on the harvest day. DayCent applies same-day cultivation before harvest (the manual: events on the same day "can be in any order"), so that pass moved about 25% of the live corn, grain included, into litter and soil before harvest: cover crop corn grain was 0.753 x conventional in 2020, before any cover crop had grown, and that buried grain inflated the cover crop SOC credit. The script edits every schedule that plants `BAR` (v2schedules, the staged copies in `sites/enfarm/`, and the v1 templates read by `build_cycle_schedules.R`; archive folders are unchanged). Conventional years inside cycling and reversion schedules (field cultivator and tandem disk on day 297) are not changed. Running it again changes nothing.
-
-## Cereal rye cover crop
-
-The cover crop is cereal rye (`CCRYE`), planted on day 284 and growing through winter and spring until termination (originally `CULT CSG` on day 127, the day before corn planting; now herbicide on day 117, see "Cover crop termination" below):
-
-```sh
-Rscript analysis/switch_cover_crop_to_rye.R
-```
-
-The script replaces `CROP BAR` with `CROP CCRYE` and removes the `LAST` that followed the cover crop planting in each cover crop year (it was on day 365, which stopped growth on 31 December so the cover crop never grew in spring). Harvest, fall field cultivator and tandem disk, planting, and termination dates are unchanged, so the cover crop schedule keeps its own fall tillage date (283) rather than the conventional one (297). It edits the same files as `shift_cover_crop_operations.R`; running it again changes nothing.
+Every cover crop year harvests corn on day 282, runs the fall field cultivator and tandem disk (`CULT F491`) on day 283, and plants cereal rye (`CROP CCRYE`, `PLTM`) on day 284. The rye grows through winter and spring and is terminated with herbicide 11 days before corn planting: `CULT HC` and `LAST` on day 117, then the field cultivator (`CULT D491`) on day 118 and corn planting and fertilizer on day 128. In cycling schedules, the conventional year starts with the same termination events so the rye planted the year before is terminated.
 
 `CCRYE` in `100libraryfiles/crop.100` uses the DayCent v491 "Cereal Rye for cover crop" values (105 parameters, including `PRAMX(1,2)` = 80) and fills the 40 DayCent-CABBI parameters that v491 does not have from `BAR` (photosynthesis `AMAX`/`PSNTOPT`/`GROWTHDAYS` set, `DDEMERG`, `TMXBIO`, `SFAVAIL(1)`, luxury uptake and C storage). v491's `TMPGERM`, `CAFUE`, `EMAX`, `FAVAIL(1)`, and `NPP2CS(1)` have no DayCent-CABBI slot.
-
-In a test of the default cover crop schedule, barley reached about 1 g C/m2 of shoots; rye reached about 170 g C/m2 of shoots and 80 g C/m2 of roots by 1 May, raised soil C inputs from 667 to 894 g C/m2/yr, and lowered spring mineral N and corn grain (about 8% below conventional). `CSG` moves live shoots to standing dead but does not kill roots (`CULTRA(7)` = 0), so rye roots stay live after termination until the corn crop replaces it.
-
-## Cover crop termination
-
-Every cover crop schedule terminates the rye with herbicide 11 days before corn planting (day 117; corn is planted on day 128) (2026-10-21):
-
-```sh
-Rscript analysis/switch_cc_termination_to_herbicide.R
-```
-
-Wherever a year has `CULT CSG` on day 127 followed by `CULT D491` on day 128, the script writes `CULT HC` and `LAST` on day 117 and moves `D491` to day 118; corn planting and fertilizer stay on day 128. This includes the conventional year that terminates the last rye crop in cycling and reversion schedules. It edits the same files as `switch_cover_crop_to_rye.R` (the previous schedules are in `sites/enfarm/archive/cc_schedules_pre_herbicide_2026-10-21/`); running it again changes nothing.
-
-Why the change, from daily-output tests of the default cover crop run (`sites/enfarm/v2schedules/termination_tests/`):
-
-- `CSG` (`cult.100`) kills no roots, so about 30% of the rye roots survived the next day's `D491` and became live corn roots when `CROP C10` switched the crop. It also applies tillage-strength decomposition multipliers (`CLTEFF` 1.5/3.5/3.5/1.5, including the passive pool) on top of `D491`, and DayCent applied its standing-dead-to-litter transfer (`CULTRA(4)`) only to standing dead present before the event, so the killed shoots stayed standing until `D491`.
-- `HC` moves all shoots to standing dead, kills all roots into soil litter, and has no decomposition multipliers.
-- `LAST` is needed when termination is earlier than planting: without it the rye regrew from zero after the herbicide (about 13 g C/m2 of shoots by day 127), and `CROP C10` relabeled that regrowth as corn.
-- `HARV CC491` (the v491 "false harvest") ended the rye crop but moved no biomass in DayCent-CABBI; the next day's `D491` buried the live shoots, so it is not used.
-
-| Default cover crop (net of conventional, somsc, 2020-2050) | Net SOC, Mg C/ha/yr | Corn, bu/ac/yr | Mineral N end of April, kg/ha |
-|---|---|---|---|
-| `CSG` day 127, `D491` day 128 (previous) | 0.338 | 184.8 | 2.4 |
-| `HC` day 127, `D491` day 128 | 0.346 | 182.3 | 2.5 |
-| `HC` + `LAST` day 117, `D491` day 118 (current) | 0.296 | 188.9 | 5.9 |
-
-Conventional is 202.1 bu/ac/yr with 20.5 kg/ha mineral N at the end of April. Terminating 10 days earlier than the previous day-127 termination loses the rye's fastest-growing days (shoots about 98 vs 142 g C/m2), so less residue C, and eases N immobilization before planting.
 
 ## Build fertilizer schedules
 
