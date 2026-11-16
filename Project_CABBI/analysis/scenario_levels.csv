@@ -3,8 +3,8 @@ conservation_practice,1,conv,Conventional baseline,1,Default conventional: sprin
 conservation_practice,1,nt,No-till adoption,2,Primary conservation practice candidate
 conservation_practice,1,rt,Reduced-till adoption,3,Alternative conservation tillage practice
 conservation_practice,1,cc,Cover-crop adoption,4,Alternative conservation practice
-conservation_practice,1,convplow,Conventional: field cultivator + fall plow,5,"Spring field cultivator (D491) + fall moldboard plow (K491), from v1 cnt2_corn_sDfK; counterfactual cf_convplow"
-conservation_practice,1,convrt,Conventional: row cultivator + fall sweeps/tandem disks,6,"Spring row cultivator (B491) + fall sweeps and tandem disks (E491), from v1 cnt2_corn_sBfE (same management as reduced till); counterfactual cf_convrt"
+conservation_practice,1,convplow,Conventional: field cultivator + fall plow,5,"Spring field cultivator (D491) + fall moldboard plow (K491); counterfactual cf_convplow"
+conservation_practice,1,convrt,Conventional: row cultivator + fall sweeps/tandem disks,6,"Spring row cultivator (B491) + fall sweeps and tandem disks (E491) (same management as reduced till); counterfactual cf_convrt"
 n_rate,2,uan10,UAN10 (10 g N/m2),1,fert.100 UAN10 = 10.0 g N/m2; schedules _UAN10
 n_rate,2,n_obs,Observed nitrogen fertilizer (UAN20; 20.2 g N/m2),2,Current best estimate for site management; unsuffixed base schedules use FERT UAN20
 n_rate,2,uan30,UAN30 (30 g N/m2),3,fert.100 UAN30 = 30.0 g N/m2; schedules _UAN30

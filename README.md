@@ -10,7 +10,7 @@ DayCent-CABBI simulates 30 years (2020–2050) of continuous corn at the Univers
 Project_CABBI/                 DayCent-CABBI scenario modeling and sensitivity analysis
   100libraryfiles/             placeholder: DayCent parameter files are not included
   sites/enfarm/                weather, output-definition, and management schedule files
-    v1schedules/, v2schedules/ schedule templates and generated variants
+    v2schedules/               2020-2050 management schedules
   analysis/                    R pipeline (see analysis/README.md for each step)
   outputs/summary/             compiled model output, accounting results, paper figures
 MetaAnalysis/                  empirical synthesis code and the model-versus-field figure
@@ -53,9 +53,9 @@ Rscript plot_duration_model_bands.R --soc-only   # needs empirical_soc_study_mea
 **From the DayCent runs.** DayCent-CABBI is not included: neither the executables (`DayCent_CABBI_test.exe`, `list100_DayCent_CABBI.exe`, expected in `Project_CABBI/executables/`) nor the parameter files (`.100` libraries, site `.100` files, `sitepar.in`, `soils.in`; see `Project_CABBI/100libraryfiles/README.md`). DayCent is available through LandEngine (https://landengine.org/). With those in place, run from `Project_CABBI/`:
 
 1. `build_scenario_metadata.R` → `scenario_matrix.csv`
-2. `build_conventional_alternatives.R`, `build_cycle_schedules.R`, `build_fertilizer_schedules.R` (schedules are already included)
+2. `build_conventional_alternatives.R`, `build_fertilizer_schedules.R` (schedules are already included)
 3. `build_daycent_run_plan.R` → `daycent_run_plan.csv`
-4. `run_daycent_plan.R` (about 1,700 runs; outputs go to `sites/enfarm/outputs/`)
+4. `run_daycent_plan.R` (438 runs; outputs go to `sites/enfarm/outputs/`)
 5. `extract_bin_pools.R`, `compile_outputs.R` → `daycent_annual_summary.csv`
 6. `calculate_credit_values.R` → `accounting_results.csv`
 7. the figure scripts above

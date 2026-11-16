@@ -10,7 +10,6 @@ This folder starts the reproducible scenario metadata workflow for the SOC credi
 - `scenario_matrix.csv`: generated scenario table used by later DayCent runner and accounting scripts.
 - `schedule_registry.csv`: editable schedule provenance and override table.
 - `build_daycent_run_plan.R`: turns the scenario matrix into staged DayCent runs.
-- `build_cycle_schedules.R`: generates repeated conservation/conventional cycle schedules from the v1 Enfarm templates.
 - `build_fertilizer_schedules.R`: generates the UAN10 and UAN30 variants of the continuous and cycling schedules.
 - `daycent_run_plan.csv`: generated run plan for `eq`, `base`, `cnt`, and `exp` stages.
 - `run_daycent_plan.R`: cautious runner for selected ready rows in the run plan.
@@ -53,8 +52,8 @@ Sensitivity set (432 scenarios: 324 projects and 108 conventional references):
 
 - Practices: no-till, reduced till, cover crop (cereal rye), and three conventional definitions run as counterfactual references with continuous management only:
   - `conv`: spring field cultivator (D491) + fall field cultivator and tandem disk (F491), the default.
-  - `convplow`: spring field cultivator (D491) + fall moldboard plow (K491), from v1 `cnt2_corn_sDfK` (`exp_corn_CONVPLOW_cont.sch`).
-  - `convrt`: spring row cultivator (B491) + fall sweeps and tandem disks (E491), from v1 `cnt2_corn_sBfE` (`exp_corn_CONVRT_cont.sch`). This is the same management as reduced till, so reduced till earns no credit against it.
+  - `convplow`: spring field cultivator (D491) + fall moldboard plow (K491) (`exp_corn_CONVPLOW_cont.sch`).
+  - `convrt`: spring row cultivator (B491) + fall sweeps and tandem disks (E491) (`exp_corn_CONVRT_cont.sch`). This is the same management as reduced till, so reduced till earns no credit against it.
 - N rate: UAN10 (10.0 g N/m2), UAN20 (`n_obs`, 20.2 g N/m2), UAN30 (30.0 g N/m2).
 - Land-use history: site, corn-soy, continuous corn, corn-soy without fertilizer.
 - Cycling: continuous, conventional every 5th year, conventional every 10th year.
@@ -72,19 +71,17 @@ Use `analysis/schedule_registry.csv` for schedule-file provenance. Each row can 
 - `source_schedule_file`: where the schedule came from, if it was copied, renamed, or adapted.
 - `schedule_description`, `schedule_origin`, `schedule_notes`: human-readable provenance.
 
-The run-plan builder applies active registry rows after creating convention-based paths. This means you can either rename schedules to the convention or point directly to existing files such as `sites/enfarm/v1schedules/cnt_cornsoy_2019.sch`. If a schedule is outside `sites/enfarm`, the runner stages a copy into the site folder before running DayCent.
+The run-plan builder applies active registry rows after creating convention-based paths. This means you can either rename schedules to the convention or point directly to existing files such as `sites/enfarm/cnt_cornsoy_2019.sch`. If a schedule is outside `sites/enfarm`, the runner stages a copy into the site folder before running DayCent.
 
 The builder also checks the site `.100` file named on line 3 of each schedule. If that file is missing, the run is blocked in `daycent_run_plan.csv` until the schedule or site file is corrected.
 
-## Build cycling schedules
+## Schedule files
 
-Generate the 5- and 10-year cycle templates with:
+`sites/enfarm/` holds the spin-up and history schedules (`enfarm_eq.sch`, `enfarm_base.sch`, `enfarm_cnt.sch`, and the alternative 2008-2019 histories `enfarm_cnt_corn_2019.sch`, `cnt_cornsoy_2019.sch`, `cnt_cornsoy0N_2019.sch`). `sites/enfarm/v2schedules/` holds the 36 schedules of the 2020-2050 runs; the runner stages a copy into `sites/enfarm/` when it runs one.
 
-```sh
-Rscript analysis/build_cycle_schedules.R
-```
+## Cycling schedules
 
-For an N-year cycle, years 1 through N-1 use the conservation-practice events from the v1 template; year N uses the conventional events. For CC, the conventional year also starts with the cover-crop termination events (`CULT HC` and `LAST` on day 117, with that year's `CULT D491` moved to day 118; see "Cover crop management" below), so the rye planted in the previous year is terminated. The cycle repeats through 2050. The script writes NT, RT, and CC schedules to `sites/enfarm/v2schedules/` and refuses to overwrite an existing target file.
+In an N-year cycle schedule (`exp_corn_<practice>_cycle_<N>.sch`), years 1 through N-1 use the conservation-practice events and year N uses the conventional events. For CC, the conventional year also starts with the cover-crop termination events (`CULT HC` and `LAST` on day 117, with that year's `CULT D491` moved to day 118; see "Cover crop management" below), so the rye planted in the previous year is terminated. The cycle repeats through 2050.
 
 Each cycle schedule is reused across all histories (the history is the preceding `cnt` run); `build_fertilizer_schedules.R` adds its UAN10 and UAN30 variants.
 
