@@ -1,0 +1,271 @@
+source,Change,years,n,lower,median,upper
+Combined (model inputs + accounting),NT,1,3240,-2.4674,-0.1352,1.8212
+Combined (model inputs + accounting),NT,2,3240,-1.1547,-0.1525,1.2855
+Combined (model inputs + accounting),NT,3,3240,-0.9382,-0.0627,0.8456
+Combined (model inputs + accounting),NT,4,3240,-0.671,0.0073,0.7967
+Combined (model inputs + accounting),NT,5,3240,-0.5147,0.0435,0.7257
+Combined (model inputs + accounting),NT,6,3240,-0.5088,0.0524,0.7066
+Combined (model inputs + accounting),NT,7,3240,-0.469,0.0567,0.6526
+Combined (model inputs + accounting),NT,8,3240,-0.4157,0.0666,0.6217
+Combined (model inputs + accounting),NT,9,3240,-0.379,0.0739,0.6104
+Combined (model inputs + accounting),NT,10,3240,-0.2757,0.0858,0.5856
+Combined (model inputs + accounting),NT,11,3240,-0.2879,0.0817,0.5512
+Combined (model inputs + accounting),NT,12,3240,-0.2829,0.0899,0.54
+Combined (model inputs + accounting),NT,13,3240,-0.2774,0.089,0.5537
+Combined (model inputs + accounting),NT,14,3240,-0.2584,0.0948,0.5312
+Combined (model inputs + accounting),NT,15,3240,-0.216,0.1094,0.4903
+Combined (model inputs + accounting),NT,16,3240,-0.2072,0.1063,0.487
+Combined (model inputs + accounting),NT,17,3240,-0.1977,0.1132,0.483
+Combined (model inputs + accounting),NT,18,3240,-0.1777,0.1227,0.4707
+Combined (model inputs + accounting),NT,19,3240,-0.1718,0.1183,0.47
+Combined (model inputs + accounting),NT,20,3240,-0.1376,0.1239,0.4267
+Combined (model inputs + accounting),NT,21,3240,-0.1436,0.1298,0.442
+Combined (model inputs + accounting),NT,22,3240,-0.1433,0.1328,0.4481
+Combined (model inputs + accounting),NT,23,3240,-0.1379,0.134,0.4221
+Combined (model inputs + accounting),NT,24,3240,-0.1345,0.1264,0.4238
+Combined (model inputs + accounting),NT,25,3240,-0.1185,0.1278,0.4137
+Combined (model inputs + accounting),NT,26,3240,-0.1168,0.1289,0.4071
+Combined (model inputs + accounting),NT,27,3240,-0.1145,0.127,0.3967
+Combined (model inputs + accounting),NT,28,3240,-0.106,0.1262,0.3949
+Combined (model inputs + accounting),NT,29,3240,-0.103,0.1256,0.3858
+Combined (model inputs + accounting),NT,30,3240,-0.0786,0.1256,0.3604
+Combined (model inputs + accounting),RT,1,3240,-0.7792,0,1.2751
+Combined (model inputs + accounting),RT,2,3240,-0.2164,0.1,0.8273
+Combined (model inputs + accounting),RT,3,3240,-0.0766,0.1231,0.6587
+Combined (model inputs + accounting),RT,4,3240,-0.0093,0.1325,0.5987
+Combined (model inputs + accounting),RT,5,3240,-0.0913,0.1249,0.5572
+Combined (model inputs + accounting),RT,6,3240,-0.054,0.1312,0.5469
+Combined (model inputs + accounting),RT,7,3240,-0.0375,0.1433,0.5051
+Combined (model inputs + accounting),RT,8,3240,-0.0282,0.1551,0.5231
+Combined (model inputs + accounting),RT,9,3240,-0.023,0.1574,0.526
+Combined (model inputs + accounting),RT,10,3240,-0.0833,0.1404,0.4767
+Combined (model inputs + accounting),RT,11,3240,-0.0482,0.1474,0.475
+Combined (model inputs + accounting),RT,12,3240,-0.0374,0.1525,0.4754
+Combined (model inputs + accounting),RT,13,3240,-0.0314,0.1557,0.4674
+Combined (model inputs + accounting),RT,14,3240,-0.0267,0.1568,0.4572
+Combined (model inputs + accounting),RT,15,3240,-0.0638,0.1431,0.4498
+Combined (model inputs + accounting),RT,16,3240,-0.0475,0.1459,0.4359
+Combined (model inputs + accounting),RT,17,3240,-0.041,0.1462,0.439
+Combined (model inputs + accounting),RT,18,3240,-0.0356,0.1474,0.4245
+Combined (model inputs + accounting),RT,19,3240,-0.0313,0.1474,0.4158
+Combined (model inputs + accounting),RT,20,3240,-0.0634,0.1296,0.387
+Combined (model inputs + accounting),RT,21,3240,-0.0479,0.1329,0.389
+Combined (model inputs + accounting),RT,22,3240,-0.0402,0.1319,0.3873
+Combined (model inputs + accounting),RT,23,3240,-0.0352,0.1316,0.3723
+Combined (model inputs + accounting),RT,24,3240,-0.0308,0.1319,0.3651
+Combined (model inputs + accounting),RT,25,3240,-0.0517,0.1234,0.3553
+Combined (model inputs + accounting),RT,26,3240,-0.0441,0.1241,0.3451
+Combined (model inputs + accounting),RT,27,3240,-0.0385,0.1244,0.3367
+Combined (model inputs + accounting),RT,28,3240,-0.0338,0.1243,0.3383
+Combined (model inputs + accounting),RT,29,3240,-0.03,0.1238,0.3294
+Combined (model inputs + accounting),RT,30,3240,-0.049,0.1112,0.3203
+Combined (model inputs + accounting),CC,1,3240,-1.6641,-0.1125,1.4683
+Combined (model inputs + accounting),CC,2,3240,-0.2707,0.2067,1.2823
+Combined (model inputs + accounting),CC,3,3240,-0.0984,0.2744,0.9613
+Combined (model inputs + accounting),CC,4,3240,0.0282,0.2989,1.0336
+Combined (model inputs + accounting),CC,5,3240,0.1111,0.3448,0.9837
+Combined (model inputs + accounting),CC,6,3240,0.0655,0.3086,0.912
+Combined (model inputs + accounting),CC,7,3240,0.0761,0.3016,0.8251
+Combined (model inputs + accounting),CC,8,3240,0.0958,0.3212,0.8974
+Combined (model inputs + accounting),CC,9,3240,0.0995,0.3385,0.9062
+Combined (model inputs + accounting),CC,10,3240,0.1247,0.3539,0.8437
+Combined (model inputs + accounting),CC,11,3240,0.0916,0.3104,0.7764
+Combined (model inputs + accounting),CC,12,3240,0.0914,0.3143,0.7917
+Combined (model inputs + accounting),CC,13,3240,0.1046,0.3239,0.7699
+Combined (model inputs + accounting),CC,14,3240,0.0993,0.3154,0.7462
+Combined (model inputs + accounting),CC,15,3240,0.1109,0.324,0.7613
+Combined (model inputs + accounting),CC,16,3240,0.0863,0.3108,0.7192
+Combined (model inputs + accounting),CC,17,3240,0.0951,0.315,0.737
+Combined (model inputs + accounting),CC,18,3240,0.1094,0.3243,0.7428
+Combined (model inputs + accounting),CC,19,3240,0.1122,0.3188,0.7216
+Combined (model inputs + accounting),CC,20,3240,0.1127,0.3082,0.682
+Combined (model inputs + accounting),CC,21,3240,0.0888,0.2855,0.6648
+Combined (model inputs + accounting),CC,22,3240,0.0943,0.2947,0.689
+Combined (model inputs + accounting),CC,23,3240,0.1012,0.2977,0.6747
+Combined (model inputs + accounting),CC,24,3240,0.1027,0.2878,0.6457
+Combined (model inputs + accounting),CC,25,3240,0.1026,0.2813,0.6235
+Combined (model inputs + accounting),CC,26,3240,0.0862,0.2778,0.6126
+Combined (model inputs + accounting),CC,27,3240,0.0898,0.2716,0.5997
+Combined (model inputs + accounting),CC,28,3240,0.0963,0.2747,0.6034
+Combined (model inputs + accounting),CC,29,3240,0.1007,0.2739,0.5985
+Combined (model inputs + accounting),CC,30,3240,0.1011,0.271,0.5903
+Model inputs,NT,1,108,-1.0395,-0.1764,0.0552
+Model inputs,NT,2,108,-0.6014,-0.2645,0.0349
+Model inputs,NT,3,108,-0.3744,-0.1618,0.0607
+Model inputs,NT,4,108,-0.328,-0.1209,0.0909
+Model inputs,NT,5,108,-0.2539,0.0239,0.1787
+Model inputs,NT,6,108,-0.2249,0.0019,0.2031
+Model inputs,NT,7,108,-0.2043,0.0098,0.2154
+Model inputs,NT,8,108,-0.1793,0.0227,0.228
+Model inputs,NT,9,108,-0.1382,0.0454,0.2401
+Model inputs,NT,10,108,-0.0971,0.0896,0.2407
+Model inputs,NT,11,108,-0.0684,0.0807,0.2343
+Model inputs,NT,12,108,-0.0611,0.0756,0.2259
+Model inputs,NT,13,108,-0.0464,0.0741,0.2209
+Model inputs,NT,14,108,-0.0267,0.0763,0.2183
+Model inputs,NT,15,108,-0.0096,0.0936,0.2162
+Model inputs,NT,16,108,0.0056,0.0942,0.2131
+Model inputs,NT,17,108,0.0144,0.0908,0.2084
+Model inputs,NT,18,108,0.0362,0.0942,0.2062
+Model inputs,NT,19,108,0.0468,0.094,0.202
+Model inputs,NT,20,108,0.059,0.1135,0.1983
+Model inputs,NT,21,108,0.0619,0.1036,0.1912
+Model inputs,NT,22,108,0.0681,0.1046,0.1849
+Model inputs,NT,23,108,0.0701,0.1017,0.1781
+Model inputs,NT,24,108,0.0746,0.1005,0.1729
+Model inputs,NT,25,108,0.0712,0.1056,0.1682
+Model inputs,NT,26,108,0.0723,0.1038,0.1658
+Model inputs,NT,27,108,0.078,0.1031,0.1642
+Model inputs,NT,28,108,0.0838,0.1034,0.1632
+Model inputs,NT,29,108,0.0877,0.104,0.1615
+Model inputs,NT,30,108,0.0903,0.1178,0.1652
+Model inputs,RT,1,108,0.1753,0.292,0.749
+Model inputs,RT,2,108,0.1549,0.2769,0.5528
+Model inputs,RT,3,108,0.1357,0.2326,0.4519
+Model inputs,RT,4,108,0.1289,0.2327,0.432
+Model inputs,RT,5,108,0.0887,0.1922,0.4003
+Model inputs,RT,6,108,0.1023,0.1962,0.3853
+Model inputs,RT,7,108,0.1068,0.196,0.3779
+Model inputs,RT,8,108,0.1059,0.1934,0.3716
+Model inputs,RT,9,108,0.1037,0.1871,0.3538
+Model inputs,RT,10,108,0.0767,0.1581,0.288
+Model inputs,RT,11,108,0.0836,0.1668,0.2903
+Model inputs,RT,12,108,0.0868,0.1676,0.2945
+Model inputs,RT,13,108,0.0864,0.1633,0.2859
+Model inputs,RT,14,108,0.0857,0.1602,0.2807
+Model inputs,RT,15,108,0.0693,0.1514,0.2751
+Model inputs,RT,16,108,0.0743,0.1502,0.2659
+Model inputs,RT,17,108,0.0778,0.1521,0.2677
+Model inputs,RT,18,108,0.0784,0.1481,0.2607
+Model inputs,RT,19,108,0.079,0.148,0.2563
+Model inputs,RT,20,108,0.0634,0.1371,0.2296
+Model inputs,RT,21,108,0.068,0.138,0.228
+Model inputs,RT,22,108,0.0697,0.1338,0.2244
+Model inputs,RT,23,108,0.0698,0.1318,0.2172
+Model inputs,RT,24,108,0.07,0.1311,0.2143
+Model inputs,RT,25,108,0.0577,0.1263,0.2123
+Model inputs,RT,26,108,0.0614,0.1251,0.2075
+Model inputs,RT,27,108,0.0629,0.1267,0.2044
+Model inputs,RT,28,108,0.0632,0.1266,0.2012
+Model inputs,RT,29,108,0.0633,0.124,0.1957
+Model inputs,RT,30,108,0.0536,0.1069,0.1917
+Model inputs,CC,1,108,-0.0022,0.0257,0.0451
+Model inputs,CC,2,108,0.1705,0.2592,0.4054
+Model inputs,CC,3,108,0.2315,0.323,0.5491
+Model inputs,CC,4,108,0.2297,0.3191,0.574
+Model inputs,CC,5,108,0.2474,0.3694,0.6595
+Model inputs,CC,6,108,0.2067,0.3398,0.6733
+Model inputs,CC,7,108,0.2063,0.3306,0.644
+Model inputs,CC,8,108,0.2046,0.3313,0.6305
+Model inputs,CC,9,108,0.2099,0.3427,0.6202
+Model inputs,CC,10,108,0.2211,0.365,0.6394
+Model inputs,CC,11,108,0.1933,0.3325,0.5765
+Model inputs,CC,12,108,0.1878,0.3242,0.5509
+Model inputs,CC,13,108,0.1953,0.3341,0.5622
+Model inputs,CC,14,108,0.1884,0.323,0.5465
+Model inputs,CC,15,108,0.1933,0.3259,0.5478
+Model inputs,CC,16,108,0.1722,0.3267,0.5589
+Model inputs,CC,17,108,0.1729,0.3233,0.5534
+Model inputs,CC,18,108,0.1809,0.328,0.5641
+Model inputs,CC,19,108,0.1831,0.325,0.5623
+Model inputs,CC,20,108,0.183,0.3128,0.5454
+Model inputs,CC,21,108,0.1639,0.3021,0.4959
+Model inputs,CC,22,108,0.1652,0.2949,0.4857
+Model inputs,CC,23,108,0.1691,0.2986,0.4918
+Model inputs,CC,24,108,0.1716,0.2936,0.4815
+Model inputs,CC,25,108,0.1687,0.2852,0.4638
+Model inputs,CC,26,108,0.1548,0.2838,0.4665
+Model inputs,CC,27,108,0.1511,0.2779,0.4538
+Model inputs,CC,28,108,0.1547,0.2811,0.4506
+Model inputs,CC,29,108,0.159,0.2855,0.4553
+Model inputs,CC,30,108,0.1584,0.2851,0.4528
+Accounting decisions,NT,1,30,-1.6638,-0.2892,1.6144
+Accounting decisions,NT,2,30,-0.7128,-0.3024,1.1028
+Accounting decisions,NT,3,30,-0.6013,-0.23,0.7842
+Accounting decisions,NT,4,30,-0.4563,-0.173,0.6931
+Accounting decisions,NT,5,30,-0.3882,-0.1284,0.6235
+Accounting decisions,NT,6,30,-0.3763,-0.112,0.5831
+Accounting decisions,NT,7,30,-0.3325,-0.0777,0.5343
+Accounting decisions,NT,8,30,-0.2936,-0.0307,0.5477
+Accounting decisions,NT,9,30,-0.2502,0.0155,0.5452
+Accounting decisions,NT,10,30,-0.2328,0.0244,0.4775
+Accounting decisions,NT,11,30,-0.2183,0.0368,0.4833
+Accounting decisions,NT,12,30,-0.1972,0.059,0.492
+Accounting decisions,NT,13,30,-0.1862,0.0711,0.4641
+Accounting decisions,NT,14,30,-0.1745,0.0789,0.4557
+Accounting decisions,NT,15,30,-0.157,0.0886,0.4569
+Accounting decisions,NT,16,30,-0.1454,0.0898,0.4341
+Accounting decisions,NT,17,30,-0.1379,0.0925,0.4336
+Accounting decisions,NT,18,30,-0.1237,0.0945,0.4261
+Accounting decisions,NT,19,30,-0.1234,0.0978,0.4238
+Accounting decisions,NT,20,30,-0.119,0.0959,0.4108
+Accounting decisions,NT,21,30,-0.1091,0.0991,0.4207
+Accounting decisions,NT,22,30,-0.0957,0.1023,0.4214
+Accounting decisions,NT,23,30,-0.0921,0.0998,0.3915
+Accounting decisions,NT,24,30,-0.0892,0.0999,0.3945
+Accounting decisions,NT,25,30,-0.0826,0.1038,0.3975
+Accounting decisions,NT,26,30,-0.0799,0.103,0.3824
+Accounting decisions,NT,27,30,-0.076,0.1049,0.3767
+Accounting decisions,NT,28,30,-0.0687,0.1093,0.3757
+Accounting decisions,NT,29,30,-0.0648,0.1087,0.3617
+Accounting decisions,NT,30,30,-0.0621,0.1117,0.3605
+Accounting decisions,RT,1,30,-0.5292,0,1.0488
+Accounting decisions,RT,2,30,-0.1285,0.0344,0.6902
+Accounting decisions,RT,3,30,-0.0065,0.1126,0.5211
+Accounting decisions,RT,4,30,-0.0023,0.1182,0.4661
+Accounting decisions,RT,5,30,0,0.1346,0.4466
+Accounting decisions,RT,6,30,0,0.1351,0.4164
+Accounting decisions,RT,7,30,0,0.1528,0.393
+Accounting decisions,RT,8,30,0,0.1691,0.4102
+Accounting decisions,RT,9,30,0,0.1656,0.4228
+Accounting decisions,RT,10,30,0,0.1669,0.3769
+Accounting decisions,RT,11,30,0,0.1663,0.3774
+Accounting decisions,RT,12,30,0,0.1641,0.3803
+Accounting decisions,RT,13,30,0,0.1652,0.3628
+Accounting decisions,RT,14,30,0,0.1632,0.3558
+Accounting decisions,RT,15,30,0,0.1617,0.3613
+Accounting decisions,RT,16,30,0,0.1609,0.3447
+Accounting decisions,RT,17,30,0,0.1586,0.3406
+Accounting decisions,RT,18,30,0,0.1574,0.3377
+Accounting decisions,RT,19,30,0,0.1561,0.3312
+Accounting decisions,RT,20,30,0,0.1543,0.322
+Accounting decisions,RT,21,30,0,0.1514,0.328
+Accounting decisions,RT,22,30,0,0.1472,0.3319
+Accounting decisions,RT,23,30,0,0.1458,0.3108
+Accounting decisions,RT,24,30,0,0.1434,0.3096
+Accounting decisions,RT,25,30,0,0.1406,0.308
+Accounting decisions,RT,26,30,0,0.1404,0.2971
+Accounting decisions,RT,27,30,0,0.1385,0.292
+Accounting decisions,RT,28,30,0,0.1365,0.2924
+Accounting decisions,RT,29,30,0,0.1359,0.2818
+Accounting decisions,RT,30,30,0,0.1339,0.2782
+Accounting decisions,CC,1,30,-1.309,-0.1079,1.0958
+Accounting decisions,CC,2,30,-0.2077,0.131,0.9756
+Accounting decisions,CC,3,30,-0.1001,0.1916,0.702
+Accounting decisions,CC,4,30,0.0106,0.2394,0.7604
+Accounting decisions,CC,5,30,0.0814,0.2961,0.7353
+Accounting decisions,CC,6,30,0.0921,0.3006,0.6757
+Accounting decisions,CC,7,30,0.0941,0.2968,0.6379
+Accounting decisions,CC,8,30,0.1134,0.3083,0.6908
+Accounting decisions,CC,9,30,0.1236,0.324,0.707
+Accounting decisions,CC,10,30,0.139,0.3326,0.6432
+Accounting decisions,CC,11,30,0.1432,0.3327,0.6324
+Accounting decisions,CC,12,30,0.1417,0.3338,0.6563
+Accounting decisions,CC,13,30,0.1488,0.3529,0.6138
+Accounting decisions,CC,14,30,0.1454,0.3479,0.5959
+Accounting decisions,CC,15,30,0.151,0.3494,0.6243
+Accounting decisions,CC,16,30,0.1564,0.3608,0.5801
+Accounting decisions,CC,17,30,0.157,0.3528,0.5979
+Accounting decisions,CC,18,30,0.1639,0.3693,0.5973
+Accounting decisions,CC,19,30,0.1621,0.3615,0.5739
+Accounting decisions,CC,20,30,0.1559,0.3482,0.5574
+Accounting decisions,CC,21,30,0.1553,0.3425,0.5815
+Accounting decisions,CC,22,30,0.1545,0.3471,0.5843
+Accounting decisions,CC,23,30,0.1592,0.3557,0.5505
+Accounting decisions,CC,24,30,0.1577,0.3393,0.5378
+Accounting decisions,CC,25,30,0.1553,0.3285,0.5493
+Accounting decisions,CC,26,30,0.1591,0.336,0.5222
+Accounting decisions,CC,27,30,0.1522,0.3269,0.5093
+Accounting decisions,CC,28,30,0.1565,0.3246,0.5219
+Accounting decisions,CC,29,30,0.1561,0.3257,0.4937
+Accounting decisions,CC,30,30,0.1573,0.3234,0.5011

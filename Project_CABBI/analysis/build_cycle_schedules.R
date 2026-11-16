@@ -15,7 +15,7 @@ script_dir <- get_script_dir()
 repo_root <- normalizePath(file.path(script_dir, ".."), mustWork = TRUE)
 source_dir <- file.path(repo_root, "sites", "enfarm", "v1schedules")
 output_dir <- file.path(repo_root, "sites", "enfarm", "v2schedules")
-frequencies <- c(2L, 3L, 4L, 5L, 6L, 7L, 8L, 10L)
+frequencies <- c(5L, 10L)
 source_files <- c(
   NT = "cnt2_corn_notill_cycle.sch",
   RT = "cnt2_corn_reducetill_cycle.sch",

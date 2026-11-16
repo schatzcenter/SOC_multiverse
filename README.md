@@ -70,8 +70,7 @@ Rscript plot_duration_model_bands.R --soc-only   # needs empirical_soc_study_mea
 
 ## Notes
 
-- `daycent_annual_summary.csv` (~70 MB) and `accounting_results.csv` (~32 MB) are under GitHub's 100 MB file limit.
-- The scenario matrix also contains set-aside scenarios (`analysis_set = "set_aside"`) from earlier exploration; the paper uses the sensitivity set only.
+- `daycent_annual_summary.csv` (~18 MB) and `accounting_results.csv` (~12 MB) are under GitHub's 100 MB file limit.
 
 ## Third-party data and software
 

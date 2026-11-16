@@ -1,49 +1,21 @@
-dimension,dimension_order,level_id,label,active,include_in_factorial,level_order,notes
-conservation_practice,1,conv,Conventional baseline,TRUE,TRUE,1,Default conventional: spring field cultivator (D491) + fall field cultivator and tandem disk (F491); counterfactual cf_conv
-conservation_practice,1,nt,No-till adoption,TRUE,TRUE,2,Primary conservation practice candidate
-conservation_practice,1,rt,Reduced-till adoption,TRUE,TRUE,3,Alternative conservation tillage practice
-conservation_practice,1,cc,Cover-crop adoption,TRUE,TRUE,4,Alternative conservation practice
-conservation_practice,1,convplow,Conventional: field cultivator + fall plow,TRUE,TRUE,5,"Spring field cultivator (D491) + fall moldboard plow (K491), from v1 cnt2_corn_sDfK; counterfactual cf_convplow"
-conservation_practice,1,convrt,Conventional: row cultivator + fall sweeps/tandem disks,TRUE,TRUE,6,"Spring row cultivator (B491) + fall sweeps and tandem disks (E491), from v1 cnt2_corn_sBfE (same management as reduced till); counterfactual cf_convrt"
-n_rate,2,uan10,UAN10 (10 g N/m2),TRUE,TRUE,1,fert.100 UAN10 = 10.0 g N/m2; schedules _UAN10
-n_rate,2,n_obs,Observed nitrogen fertilizer (UAN20; 20.2 g N/m2),TRUE,TRUE,2,Current best estimate for site management; unsuffixed base schedules use FERT UAN20
-n_rate,2,uan30,UAN30 (30 g N/m2),TRUE,TRUE,3,fert.100 UAN30 = 30.0 g N/m2; schedules _UAN30
-n_rate,2,n_none,No fertilizer (0 g N/m2),TRUE,FALSE,5,No FERT event; nominal rate 0 g N/m2; set aside (not in the sensitivity set)
-n_rate,2,uan3,UAN3 (3 g N/m2),TRUE,FALSE,6,Nominal rate from UAN code; fert.100 parameter is 2.8 g N/m2; set aside (not in the sensitivity set)
-n_rate,2,uan6,UAN6 (6 g N/m2),TRUE,FALSE,7,Nominal rate from UAN code; fert.100 parameter is 5.6 g N/m2; set aside (not in the sensitivity set)
-n_rate,2,uan8,UAN8 (8 g N/m2),TRUE,FALSE,8,Nominal rate from UAN code; fert.100 parameter is 8.4 g N/m2; set aside (not in the sensitivity set)
-n_rate,2,uan11,UAN11 (11 g N/m2),TRUE,FALSE,9,Nominal rate from UAN code; fert.100 parameter is 11.2 g N/m2; set aside (not in the sensitivity set)
-n_rate,2,uan18,UAN18 (18 g N/m2),TRUE,FALSE,10,Nominal rate from UAN code; fert.100 parameter is 18.0 g N/m2; set aside (not in the sensitivity set)
-historic_land_use,3,hlu_site,Site-specific historic land use,TRUE,TRUE,1,Energy Farm observed or best-estimate historical pathway
-historic_land_use,3,hlu_cs,Corn-soy historic land use,TRUE,TRUE,2,Alternative historical crop rotation
-historic_land_use,3,hlu_cc,Continuous corn historic land use,TRUE,TRUE,3,Alternative continuous corn history
-historic_land_use,3,hlu_ntc,No-till continuous corn historic land use,TRUE,FALSE,4,Alternative historical corn using no-till practices; set aside (unlikely history)
-historic_land_use,3,hlu_cs0n,Corn-soy historic land use without fertilizer,TRUE,TRUE,5,Corn-soy rotation 2008-2019 with all FERT events removed; lowest 2020 SOC of the histories
-cycling_frequency,4,cont,Continuous assigned management,TRUE,TRUE,1,No scheduled cycling or reversion
-cycling_frequency,4,rev2,Intermittent reversion every 2 years,TRUE,FALSE,2,Conservation in years 1 through N-1 and conventional management in year N of each repeated 2-year cycle; set aside
-cycling_frequency,4,rev3,Intermittent reversion every 3 years,TRUE,FALSE,3,Conservation in years 1 through N-1 and conventional management in year N of each repeated 3-year cycle; set aside
-cycling_frequency,4,rev4,Intermittent reversion every 4 years,TRUE,FALSE,4,Conservation in years 1 through N-1 and conventional management in year N of each repeated 4-year cycle; set aside
-cycling_frequency,4,rev5,Intermittent reversion every 5 years,TRUE,TRUE,5,Conservation in years 1 through N-1 and conventional management in year N of each repeated 5-year cycle
-cycling_frequency,4,rev6,Intermittent reversion every 6 years,TRUE,FALSE,6,Conservation in years 1 through N-1 and conventional management in year N of each repeated 6-year cycle; set aside
-cycling_frequency,4,rev7,Intermittent reversion every 7 years,TRUE,FALSE,7,Conservation in years 1 through N-1 and conventional management in year N of each repeated 7-year cycle; set aside
-cycling_frequency,4,rev8,Intermittent reversion every 8 years,TRUE,FALSE,8,Conservation in years 1 through N-1 and conventional management in year N of each repeated 8-year cycle; set aside
-cycling_frequency,4,rev10,Intermittent reversion every 10 years,TRUE,TRUE,9,Conservation in years 1 through N-1 and conventional management in year N of each repeated 10-year cycle
-cycling_frequency,4,adopt2_rev,Two-year adoption followed by reversion,TRUE,FALSE,10,Short adoption period followed by conventional management; set aside
-cycling_frequency,4,adopt5_rev,Five-year adoption followed by reversion,TRUE,FALSE,11,Five years of conservation followed by conventional management; set aside
-cycling_frequency,4,adopt10_rev,Ten-year adoption followed by reversion,TRUE,FALSE,12,Ten years of conservation followed by conventional management; set aside
-weather_sequence,5,w_obs,Observed weather sequence,TRUE,TRUE,1,Default weather sequence
-weather_sequence,5,w_repeat,Repeated observed weather sequence,TRUE,FALSE,2,Optional repeated weather sensitivity
-weather_sequence,5,w_warm,Warming sensitivity weather sequence,TRUE,FALSE,3,Optional climate sensitivity if weather inputs are available
-weather_sequence,5,w_dry,Drier sensitivity weather sequence,TRUE,FALSE,4,Optional climate sensitivity if weather inputs are available
-weather_sequence,5,w_wet,Wetter sensitivity weather sequence,TRUE,FALSE,5,Optional climate sensitivity if weather inputs are available
-dec4,6,dec4_lo,DEC4 low (0.0022),TRUE,TRUE,1,fix.100 DEC4 = 0.0022 in the 2020-2050 run only
-dec4,6,dec4_def,DEC4 default (0.0025),TRUE,TRUE,2,fix.100 DEC4 = 0.0025 (library default); omitted from scenario IDs
-dec4,6,dec4_hi,DEC4 high (0.0048),TRUE,TRUE,3,fix.100 DEC4 = 0.0048 in the 2020-2050 run only
-counterfactual_practice,7,cf_static_conv,Static conventional continuation,FALSE,FALSE,1,"Default accounting counterfactual; replaced by conventional practice levels (convplow, convrt)"
-counterfactual_practice,7,cf_rowcult_chisel,Spring row cultivator plus fall chisel plow,FALSE,FALSE,2,"Optional modeled counterfactual practice; replaced by conventional practice levels (convplow, convrt)"
-counterfactual_practice,7,cf_fieldcult_plow,Spring field cultivator plus fall generic plowing,FALSE,FALSE,3,"Optional modeled counterfactual practice; replaced by conventional practice levels (convplow, convrt)"
-counterfactual_practice,7,cf_harrow_diskchisel,Spring harrow plus fall disk chisel,FALSE,FALSE,4,"Optional modeled counterfactual practice; replaced by conventional practice levels (convplow, convrt)"
-counterfactual_practice,7,cf_sweeps_disks_chisel,Spring sweeps and tandem disks plus fall chisel plow,FALSE,FALSE,5,"Optional modeled counterfactual practice; replaced by conventional practice levels (convplow, convrt)"
-counterfactual_practice,7,cf_barley_cover,Barley cover crop counterfactual,FALSE,FALSE,6,"Optional modeled counterfactual practice; replaced by conventional practice levels (convplow, convrt)"
-counterfactual_practice,7,cf_legume_cover,Legume cover crop counterfactual,FALSE,FALSE,7,"Optional modeled counterfactual practice; replaced by conventional practice levels (convplow, convrt)"
-counterfactual_practice,7,cf_oat_cover,Oat cover crop counterfactual,FALSE,FALSE,8,"Optional modeled counterfactual practice; replaced by conventional practice levels (convplow, convrt)"
+dimension,dimension_order,level_id,label,level_order,notes
+conservation_practice,1,conv,Conventional baseline,1,Default conventional: spring field cultivator (D491) + fall field cultivator and tandem disk (F491); counterfactual cf_conv
+conservation_practice,1,nt,No-till adoption,2,Primary conservation practice candidate
+conservation_practice,1,rt,Reduced-till adoption,3,Alternative conservation tillage practice
+conservation_practice,1,cc,Cover-crop adoption,4,Alternative conservation practice
+conservation_practice,1,convplow,Conventional: field cultivator + fall plow,5,"Spring field cultivator (D491) + fall moldboard plow (K491), from v1 cnt2_corn_sDfK; counterfactual cf_convplow"
+conservation_practice,1,convrt,Conventional: row cultivator + fall sweeps/tandem disks,6,"Spring row cultivator (B491) + fall sweeps and tandem disks (E491), from v1 cnt2_corn_sBfE (same management as reduced till); counterfactual cf_convrt"
+n_rate,2,uan10,UAN10 (10 g N/m2),1,fert.100 UAN10 = 10.0 g N/m2; schedules _UAN10
+n_rate,2,n_obs,Observed nitrogen fertilizer (UAN20; 20.2 g N/m2),2,Current best estimate for site management; unsuffixed base schedules use FERT UAN20
+n_rate,2,uan30,UAN30 (30 g N/m2),3,fert.100 UAN30 = 30.0 g N/m2; schedules _UAN30
+historic_land_use,3,hlu_site,Site-specific historic land use,1,Energy Farm observed or best-estimate historical pathway
+historic_land_use,3,hlu_cs,Corn-soy historic land use,2,Alternative historical crop rotation
+historic_land_use,3,hlu_cc,Continuous corn historic land use,3,Alternative continuous corn history
+historic_land_use,3,hlu_cs0n,Corn-soy historic land use without fertilizer,4,Corn-soy rotation 2008-2019 with all FERT events removed; lowest 2020 SOC of the histories
+cycling_frequency,4,cont,Continuous assigned management,1,No scheduled cycling or reversion
+cycling_frequency,4,rev5,Intermittent reversion every 5 years,2,Conservation in years 1 through N-1 and conventional management in year N of each repeated 5-year cycle
+cycling_frequency,4,rev10,Intermittent reversion every 10 years,3,Conservation in years 1 through N-1 and conventional management in year N of each repeated 10-year cycle
+weather_sequence,5,w_obs,Observed weather sequence,1,Default weather sequence
+dec4,6,dec4_lo,DEC4 low (0.0022),1,fix.100 DEC4 = 0.0022 in the 2020-2050 run only
+dec4,6,dec4_def,DEC4 default (0.0025),2,fix.100 DEC4 = 0.0025 (library default); omitted from scenario IDs
+dec4,6,dec4_hi,DEC4 high (0.0048),3,fix.100 DEC4 = 0.0048 in the 2020-2050 run only

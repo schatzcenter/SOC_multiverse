@@ -1,8 +1,7 @@
 # ANOVA-style variance decomposition of a deterministic specification ensemble.
 #
 # Each conservation practice is decomposed separately. A practice's ensemble
-# is its enumerated sensitivity-set specifications in accounting_results.csv
-# (analysis_set == "sensitivity"; set-aside runs are excluded): each
+# is its enumerated sensitivity-set specifications in accounting_results.csv: each
 # combination of biophysical and model inputs (N rate, historic land use,
 # cycling, DEC4) and accounting choices (carbon pool, horizon, counterfactual,
 # N2O treatment, functional unit) gives one deterministic DayCent-based
@@ -71,9 +70,7 @@ factor_labels <- c(
 factors <- names(factor_groups)
 weighting <- "discrete uniform over enumerated specifications"
 
-# Sensitivity-set scenarios only (set-aside runs are excluded).
-results <- fread(results_path, select = c("analysis_set", "conservation_practice", factors, response))
-results <- results[analysis_set == "sensitivity"][, analysis_set := NULL]
+results <- fread(results_path, select = c("conservation_practice", factors, response))
 
 max_order <- 3L  # main effects through three-way interactions; higher is remainder
 term_types <- c("main", "two-way", "three-way")

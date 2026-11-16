@@ -71,15 +71,10 @@ variable_groups <- c(
   functional_unit = "accounting"
 )
 level_labels <- c(
-  n_none = "0 N", uan3 = "UAN3", uan6 = "UAN6", uan8 = "UAN8", uan10 = "UAN10", uan11 = "UAN11",
-  uan18 = "UAN18", n_obs = "UAN20", uan30 = "UAN30",
+  uan10 = "UAN10", n_obs = "UAN20", uan30 = "UAN30",
   dec4_lo = "DEC4 0.0022", dec4_def = "DEC4 default (0.0025)", dec4_hi = "DEC4 0.0048",
-  hlu_site = "Site history", hlu_cs = "Corn-soy", hlu_cc = "Cont. corn",
-  hlu_ntc = "No-till corn", hlu_cs0n = "Corn-soy, 0 N",
-  cont = "Continuous", rev2 = "Cycle 2 yr", rev3 = "Cycle 3 yr", rev4 = "Cycle 4 yr",
-  rev5 = "Cycle 5 yr", rev6 = "Cycle 6 yr", rev7 = "Cycle 7 yr", rev8 = "Cycle 8 yr",
-  rev10 = "Cycle 10 yr", adopt2_rev = "2 yr then revert", adopt5_rev = "5 yr then revert",
-  adopt10_rev = "10 yr then revert",
+  hlu_site = "Site history", hlu_cs = "Corn-soy", hlu_cc = "Cont. corn", hlu_cs0n = "Corn-soy, 0 N",
+  cont = "Continuous", rev5 = "Cycle 5 yr", rev10 = "Cycle 10 yr",
   slow_passive = "Slow+passive", somsc = "somsc", soil_surface = "Soil+surface",
   totc = "totc", somtc = "somtc",
   totsysc = "totsysc",
@@ -90,9 +85,7 @@ level_labels <- c(
 )
 practices <- c(nt = "No-till", rt = "Reduced-till", cc = "Cover crop")
 
-# Sensitivity-set scenarios only (set-aside runs are excluded).
 results <- fread(results_path)
-results <- results[analysis_set == "sensitivity"]
 variables <- names(defaults)
 
 # One-at-a-time sweeps -----------------------------------------------------------

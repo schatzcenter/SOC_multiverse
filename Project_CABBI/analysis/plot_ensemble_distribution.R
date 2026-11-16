@@ -37,7 +37,7 @@ defaults <- list(n_rate = "n_obs", historic_land_use = "hlu_site", cycling_frequ
                  functional_unit = "area")
 practices <- c(nt = "No-till", rt = "Reduced-till", cc = "Cover crop")
 
-results <- fread(file.path(output_dir, "accounting_results.csv"))[analysis_set == "sensitivity"]
+results <- fread(file.path(output_dir, "accounting_results.csv"))
 results[, practice := factor(practices[conservation_practice], levels = practices)]
 at_default <- results
 for (v in names(defaults)) at_default <- at_default[get(v) == defaults[[v]]]

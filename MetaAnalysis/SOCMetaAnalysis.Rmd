@@ -261,9 +261,8 @@ difference from the default continuous conventional at the same N rate and
 history (`cf_conv`), divided by the years since 2020, in Mg C/ha/yr; this
 mirrors the empirical treatment-minus-control rate. Sensitivity points use the
 30-year SOC-only, per-area credits from `accounting_results.csv` (somsc,
-`cf_conv`, default DEC4), converted back to Mg C. They include the set-aside
-scenarios (other N rates, cycling and adopt-then-revert patterns), which are
-credited against the default conventional. The alternative conventional
+`cf_conv`, default DEC4), converted back to Mg C: the other N rates (UAN10,
+UAN30), historic land uses, and 5- and 10-year cycling. The alternative conventional
 definitions (`convplow`, `convrt`) are counterfactuals, not practices, and are
 left out here.
 
@@ -293,7 +292,7 @@ model_curve <- model_default %>%
 stopifnot(nrow(model_curve) == 30 * length(practice_labels))
 model_30 <- model_curve %>% filter(years == 30) %>% select(Change, rate_model)
 
-# Sensitivity: other N rates, histories, cycling and reversion (30 years)
+# Sensitivity: other N rates, histories, and cycling (30 years)
 credits <- read.csv(file.path(model_dir, "accounting_results.csv"))
 model_sensitivity <- credits %>%
   filter(carbon_pool == "somsc", counterfactual == "cf_conv", horizon_years == 30,
@@ -305,9 +304,7 @@ model_sensitivity <- credits %>%
            n_rate == "n_obs" & historic_land_use == "hlu_site" & cycling_frequency == "cont" ~ "Modeled",
            n_rate != "n_obs" & historic_land_use == "hlu_site" & cycling_frequency == "cont" ~ "Modeled - Alt N Fert Rate",
            n_rate == "n_obs" & historic_land_use != "hlu_site" & cycling_frequency == "cont" ~ "Modeled - Alt HLU",
-           n_rate == "n_obs" & historic_land_use == "hlu_site" & grepl("^rev", cycling_frequency) ~ "Modeled - Cycle",
-           n_rate == "n_obs" & historic_land_use == "hlu_site" & grepl("^adopt", cycling_frequency) ~ "Modeled - Revert",
-           TRUE ~ NA_character_)) %>%
+           n_rate == "n_obs" & historic_land_use == "hlu_site" & grepl("^rev", cycling_frequency) ~ "Modeled - Cycle",           TRUE ~ NA_character_)) %>%
   filter(!is.na(PointCategory)) %>%
   select(Change, PointCategory, n_rate, historic_land_use, cycling_frequency, rate_model)
 
@@ -347,7 +344,7 @@ study_long <- study %>%
 study_counts <- study_long %>% count(method, Change)
 
 sensitivity_colors <- c("Modeled - Alt N Fert Rate" = "#eda100", "Modeled - Alt HLU" = "#6250d6",
-                        "Modeled - Cycle" = "#1baf7a", "Modeled - Revert" = "#e87ba4")
+                        "Modeled - Cycle" = "#1baf7a")
 
 ggplot(study_long, aes(x = Change, y = rate)) +
   geom_hline(yintercept = 0, color = "#b5b4ae") +

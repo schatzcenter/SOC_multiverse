@@ -5,14 +5,13 @@ This folder starts the reproducible scenario metadata workflow for the SOC credi
 ## Files
 
 - `scenario_levels.csv`: editable list of factor levels.
-- `set_aside_scenarios.csv`: earlier scenarios kept in the matrix for separate analyses (`analysis_set = "set_aside"`), not used in the sensitivity or range analyses. Replaces `supplemental_scenarios.csv`.
-- `build_scenario_metadata.R`: expands active factorial levels (the sensitivity set) into `scenario_matrix.csv` and appends the set-aside scenarios.
+- `build_scenario_metadata.R`: crosses every level in `scenario_levels.csv` into `scenario_matrix.csv`.
 - `build_conventional_alternatives.R`: writes the two alternative conventional schedules (`CONVPLOW`, `CONVRT`).
 - `scenario_matrix.csv`: generated scenario table used by later DayCent runner and accounting scripts.
 - `schedule_registry.csv`: editable schedule provenance and override table.
 - `build_daycent_run_plan.R`: turns the scenario matrix into staged DayCent runs.
 - `build_cycle_schedules.R`: generates repeated conservation/conventional cycle schedules from the v1 Enfarm templates.
-- `build_fertilizer_schedules.R`: generates UAN/no-fertilizer variants for continuous, cycling, and one-time reversion schedules, plus the HLU-expanded supplemental scenario list.
+- `build_fertilizer_schedules.R`: generates the UAN10 and UAN30 variants of the continuous and cycling schedules.
 - `daycent_run_plan.csv`: generated run plan for `eq`, `base`, `cnt`, and `exp` stages.
 - `run_daycent_plan.R`: cautious runner for selected ready rows in the run plan.
 - `extract_bin_pools.R`: runs list100 on each exp-stage `.bin` to extract annual `somtc`, `totc`, `totsysc`, and N volatilization accumulators.
@@ -33,10 +32,7 @@ This folder starts the reproducible scenario metadata workflow for the SOC credi
 
 Edit `scenario_levels.csv`.
 
-- Add a row to create a new level.
-- Set `active` to `TRUE` when the level is available for use.
-- Set `include_in_factorial` to `TRUE` when the level should be expanded into the scenario matrix.
-- Leave optional levels as `include_in_factorial = FALSE` until you want them included.
+Every row is crossed into the scenario matrix: add a row to add a level, and delete a row to remove one. A new level also needs its schedules (and, for a new history, its `cnt` run) before it can run.
 
 Then run:
 
@@ -54,7 +50,7 @@ The script currently removes redundant conventional-baseline rows where cycling 
 
 ### Current design (2026-10-21)
 
-Sensitivity set (`analysis_set = "sensitivity"`, 432 scenarios: 324 projects and 108 conventional references):
+Sensitivity set (432 scenarios: 324 projects and 108 conventional references):
 
 - Practices: no-till, reduced till, cover crop (cereal rye), and three conventional definitions run as counterfactual references with continuous management only:
   - `conv`: spring field cultivator (D491) + fall field cultivator and tandem disk (F491), the default.
@@ -64,8 +60,6 @@ Sensitivity set (`analysis_set = "sensitivity"`, 432 scenarios: 324 projects and
 - Land-use history: site, corn-soy, continuous corn, corn-soy without fertilizer.
 - Cycling: continuous, conventional every 5th year, conventional every 10th year.
 - DEC4 (`fix.100` passive SOM decomposition rate): 0.0022, 0.0025 (default), and 0.0048, applied to the 2020-2050 run only; every run starts from the same 2020 state. The scenario matrix's `fix_overrides` column (e.g. `DEC4=0.00220`) passes the value to the run plan, and `run_daycent_plan.R` sets it in the site copy of `fix.100` for that run and restores the library file afterwards. The default level (`dec4_def`) is left out of scenario IDs, so runs made before the DEC4 dimension keep their names.
-
-Set-aside scenarios (`analysis_set = "set_aside"`, 1,255): the earlier N rates (0, UAN3/6/8/11/18), the no-till continuous corn history, and the other cycling and adopt-then-revert patterns, at the default DEC4. Their credits are computed against the default conventional only. The paper uses the sensitivity set only.
 
 
 ## Where to document schedule files
@@ -85,7 +79,7 @@ The builder also checks the site `.100` file named on line 3 of each schedule. I
 
 ## Build cycling schedules
 
-Generate the 2-, 3-, 4-, 5-, 6-, 7-, 8-, and 10-year cycle templates with:
+Generate the 5- and 10-year cycle templates with:
 
 ```sh
 Rscript analysis/build_cycle_schedules.R
@@ -93,7 +87,7 @@ Rscript analysis/build_cycle_schedules.R
 
 For an N-year cycle, years 1 through N-1 use the conservation-practice events from the v1 template; year N uses the conventional events. For CC, the conventional year also starts with the cover-crop termination events (`CULT HC` and `LAST` on day 117, with that year's `CULT D491` moved to day 118; see "Cover crop termination" below), so the rye planted in the previous year is terminated. The cycle repeats through 2050. The script writes NT, RT, and CC schedules to `sites/enfarm/v2schedules/` and refuses to overwrite an existing target file.
 
-The generated cycle levels and registry entries are enabled for observed N, site-specific historic land use, and observed weather. Other N-rate, historic-land-use, or weather combinations need corresponding management schedules and registry mappings before they are runnable.
+Each cycle schedule is reused across all histories (the history is the preceding `cnt` run); `build_fertilizer_schedules.R` adds its UAN10 and UAN30 variants.
 
 ## Cover crop timing after harvest
 
@@ -146,17 +140,15 @@ Conventional is 202.1 bu/ac/yr with 20.5 kg/ha mineral N at the end of April. Te
 
 ## Build fertilizer schedules
 
-After generating or verifying the cycle templates, generate the explicit UAN/no-fertilizer schedules and supplemental scenarios:
+After generating or verifying the cycle templates, generate the UAN10 and UAN30 schedules:
 
 ```sh
 Rscript analysis/build_fertilizer_schedules.R
 ```
 
-The script generates rate variants for CONV continuous management and for NT, RT, and CC continuous, every periodic cycle, and adopt-then-revert schedules. It reuses each `.sch` across all HLU scenarios because HLU is represented by the preceding `cnt` run. It writes or verifies 222 unique schedule files and creates 1,110 supplemental scenario rows: six explicit rates x five HLUs (`hlu_site`, `hlu_cs`, `hlu_cc`, `hlu_ntc`, `hlu_cs0n`) x the applicable management patterns, with conventional management limited to continuous. Before generating variants, the script checks every base template: each block's `Repeats # years` must equal its highest event year (otherwise DayCent leaves the unlisted years fallow), and every block after the first must use weather choice `C` (`F` restarts the weather file, misaligning weather against the single-block conventional control). The CC adopt-then-revert templates use a one-year reversion block with the `CULT CSG` termination event, followed by the repeating conventional block.
+The script builds UAN10 and UAN30 variants (10.0 and 30.0 g N/m2) of the three conventional definitions and NT/RT/CC continuous, and of the NT/RT/CC 5- and 10-year cycles: 24 schedules, written or verified against the existing files. Each `.sch` is reused across all HLU scenarios because HLU is represented by the preceding `cnt` run. Before generating variants, the script checks every base template: each block's `Repeats # years` must equal its highest event year (otherwise DayCent leaves the unlisted years fallow), and every block after the first must use weather choice `C` (`F` restarts the weather file, misaligning weather against the single-block conventional control).
 
-The UAN levels map by code to nominal concentrations UAN3/6/8/11/18 = 3/6/8/11/18 g N/m2; their actual `fert.100` parameter values are 2.8/5.6/8.4/11.2/18.0 g N/m2. The no-fertilizer schedules omit the FERT event. These earlier levels are set-aside scenarios (`set_aside_scenarios.csv`). The script also builds UAN10 and UAN30 variants (10.0 and 30.0 g N/m2) of the current-design templates: the three conventional definitions and NT/RT/CC continuous, and NT/RT/CC 5- and 10-year cycles. `build_scenario_metadata.R` maps each scenario to the shared schedule path. It no longer writes a supplemental scenario list.
-
-Run `build_scenario_metadata.R` and `build_daycent_run_plan.R` before using the plan runner. The current scenario matrix has 1,295 scenarios: the 1,110 explicit-rate scenarios plus 185 `n_obs` (UAN20) scenarios. `n_obs` maps to the unsuffixed base schedules, which apply UAN20. All 1,295 scenarios have schedules and completed runs.
+Run `build_scenario_metadata.R` and `build_daycent_run_plan.R` before using the plan runner. `build_scenario_metadata.R` maps each scenario to the shared schedule path; `n_obs` maps to the unsuffixed base schedules, which apply UAN20. The 432 scenarios use 36 schedules in `sites/enfarm/v2schedules/`, and all have completed runs.
 
 ### Corn-soy history without fertilizer (`hlu_cs0n`)
 
@@ -239,7 +231,7 @@ Edit `accounting_options.csv` to add, remove, or deactivate options, then run:
 Rscript analysis/calculate_credit_values.R
 ```
 
-The script crosses the active options into `accounting_rules.csv` and writes `outputs/summary/accounting_results.csv`, with one row per project scenario (NT, RT, CC) x rule. The current options give 180 rules and 144,720 rows (about 32 MB: 58,320 for the 324 sensitivity-set projects and 86,400 for the 1,224 set-aside projects; numbers are stored to 6 significant digits and `rule_id`/`soil_depth_cm` are kept only in `accounting_rules.csv` to stay under GitHub's 100 MB file limit):
+The script crosses the active options into `accounting_rules.csv` and writes `outputs/summary/accounting_results.csv`, with one row per project scenario (NT, RT, CC) x rule. The current options give 180 rules and 58,320 rows for the 324 projects (numbers are stored to 6 significant digits and `rule_id`/`soil_depth_cm` are kept only in `accounting_rules.csv` to stay under GitHub's 100 MB file limit):
 
 - Carbon pools (2026-10-24, used by every analysis): slow + passive SOM C (`som2c(2) + som3c`), all soil organic C (`somsc`, the default), all soil C including belowground structural and metabolic litter (`somtc`), minimum annual total non-living C (`totc`), and total system C (`totsysc`). Soil + surface SOM C (`som1c(1) + som1c(2) + som2c(1) + som2c(2) + som3c`) is listed in `accounting_options.csv` but inactive.
 - Horizons: 10, 20, and 30 years from 2020 (2026-10-23: 2 and 5 years set inactive). A 50-year option is listed but inactive until the exp runs are extended to 2070.

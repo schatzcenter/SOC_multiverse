@@ -24,9 +24,7 @@
 #
 # Counterfactuals: each option in accounting_options.csv names a conventional
 # practice (conv, convplow, convrt); the project is compared with it under
-# continuous management at the same N rate, history, weather, and DEC4. Set-
-# aside projects (analysis_set) are credited against the counterfactuals that
-# were run for them (the default conventional).
+# continuous management at the same N rate, history, weather, and DEC4.
 # Every row also reports net_credit_kg_co2e_bu: the per-bushel credit for
 # "bushel", and the area credit over project bushels for "area".
 
@@ -197,7 +195,7 @@ per_horizon[, pool_column := as.character(pool_column)]
 
 match_keys <- c("n_rate", "historic_land_use", "weather_sequence", "dec4")
 projects <- scenario_matrix[is_project_scenario == TRUE,
-                            c("scenario_id", "analysis_set", "conservation_practice", "cycling_frequency",
+                            c("scenario_id", "conservation_practice", "cycling_frequency",
                               match_keys), with = FALSE]
 references <- scenario_matrix[cycling_frequency == "cont" & conservation_practice %in% counterfactuals$value,
                               c("scenario_id", "conservation_practice", match_keys), with = FALSE]
@@ -207,17 +205,12 @@ pairs <- rbindlist(lapply(seq_len(nrow(counterfactuals)), function(k) {
   p <- merge(projects, references[reference_practice == cf$value], by = match_keys)
   p[, counterfactual := cf$option_id][, reference_practice := NULL]
 }))
-# Sensitivity-set projects need every counterfactual; set-aside projects are
-# credited against the counterfactuals that were run for them.
-incomplete <- pairs[analysis_set == "sensitivity", .N, by = scenario_id][N < nrow(counterfactuals)]
-missing_sens <- setdiff(projects[analysis_set == "sensitivity", scenario_id], pairs$scenario_id)
-if (nrow(incomplete) > 0 || length(missing_sens) > 0) {
-  stop("Sensitivity-set projects without every counterfactual, e.g. ",
-       paste(head(c(incomplete$scenario_id, missing_sens), 3), collapse = ", "), call. = FALSE)
-}
+# Every project needs every counterfactual.
+incomplete <- pairs[, .N, by = scenario_id][N < nrow(counterfactuals)]
 unpaired <- setdiff(projects$scenario_id, pairs$scenario_id)
-if (length(unpaired) > 0) {
-  warning(length(unpaired), " projects have no counterfactual run, e.g. ", unpaired[1], call. = FALSE)
+if (nrow(incomplete) > 0 || length(unpaired) > 0) {
+  stop("Projects without every counterfactual, e.g. ",
+       paste(head(c(incomplete$scenario_id, unpaired), 3), collapse = ", "), call. = FALSE)
 }
 
 # Expand to every rule and compute credits ----------------------------------
@@ -280,7 +273,7 @@ if (anyNA(results$net_credit_mg_co2e_ha_yr) || anyNA(results$net_credit_kg_co2e_
 # rule_id and soil_depth_cm (constant) are in accounting_rules.csv; the rule's
 # dimensions are columns here.
 results <- results[, .(
-  scenario_id, analysis_set, conservation_practice, n_rate, historic_land_use,
+  scenario_id, conservation_practice, n_rate, historic_land_use,
   cycling_frequency, weather_sequence, dec4, carbon_pool, horizon_years, counterfactual,
   n2o_option, functional_unit, counterfactual_scenario_id,
   delta_stock_project_mg_c_ha, delta_stock_counterfactual_mg_c_ha,

@@ -1,10 +1,7 @@
-# Build a flexible scenario matrix from editable factor levels.
+# Build the scenario matrix from the factor levels.
 #
-# Edit analysis/scenario_levels.csv to add, remove, or activate levels. This
-# script expands active factorial levels (the sensitivity set) and adds the
-# set-aside scenarios in analysis/set_aside_scenarios.csv (earlier levels kept
-# for separate analyses, not for the sensitivity/range analyses), then writes
-# analysis/scenario_matrix.csv with analysis_set = "sensitivity" or "set_aside".
+# Every level in analysis/scenario_levels.csv is crossed into a full factorial
+# and written to analysis/scenario_matrix.csv.
 #
 # Conventional practices (conv, convplow, convrt) are counterfactual references
 # and run with continuous management only. The default DEC4 level (dec4_def) is
@@ -23,10 +20,6 @@ get_script_dir <- function() {
   }
 
   getwd()
-}
-
-truthy <- function(x) {
-  tolower(trimws(as.character(x))) %in% c("true", "t", "1", "yes", "y")
 }
 
 slug <- function(x) {
@@ -64,21 +57,15 @@ scenario_levels <- read.csv(
   na.strings = c("", "NA")
 )
 
-scenario_levels$active <- truthy(scenario_levels$active)
-scenario_levels$include_in_factorial <- truthy(scenario_levels$include_in_factorial)
 scenario_levels$dimension_order <- as.integer(scenario_levels$dimension_order)
 scenario_levels$level_order <- as.integer(scenario_levels$level_order)
 scenario_levels$dimension <- slug(scenario_levels$dimension)
 scenario_levels$level_id <- slug(scenario_levels$level_id)
 
-scenario_levels <- scenario_levels[order(
+factor_levels <- scenario_levels[order(
   scenario_levels$dimension_order,
   scenario_levels$level_order
 ), ]
-
-factor_levels <- scenario_levels[
-  scenario_levels$active & scenario_levels$include_in_factorial,
-]
 
 required_dimensions <- c(
   "conservation_practice",
@@ -90,7 +77,7 @@ required_dimensions <- c(
 missing_dimensions <- setdiff(required_dimensions, unique(factor_levels$dimension))
 if (length(missing_dimensions) > 0) {
   stop(
-    "Missing active factorial levels for: ",
+    "Missing factor levels for: ",
     paste(missing_dimensions, collapse = ", "),
     call. = FALSE
   )
@@ -113,65 +100,12 @@ if (all(c("conservation_practice", "cycling_frequency") %in% names(scenario_matr
       scenario_matrix$cycling_frequency == "cont",
   ]
 }
-scenario_matrix$analysis_set <- "sensitivity"
 
 order_index <- do.call(order, lapply(factor_dimensions, function(dimension_name) {
   match(scenario_matrix[[dimension_name]], level_list[[dimension_name]])
 }))
 scenario_matrix <- scenario_matrix[order_index, ]
 row.names(scenario_matrix) <- NULL
-
-supplemental_path <- file.path(repo_root, "analysis", "set_aside_scenarios.csv")
-if (file.exists(supplemental_path)) {
-  supplemental_scenarios <- read.csv(
-    supplemental_path,
-    stringsAsFactors = FALSE,
-    check.names = FALSE,
-    na.strings = c("", "NA")
-  )
-  missing_columns <- setdiff(factor_dimensions, names(supplemental_scenarios))
-  if (length(missing_columns) > 0) {
-    stop(
-      "Supplemental scenarios are missing dimensions: ",
-      paste(missing_columns, collapse = ", "),
-      call. = FALSE
-    )
-  }
-
-  supplemental_scenarios <- supplemental_scenarios[, factor_dimensions, drop = FALSE]
-  for (dimension_name in factor_dimensions) {
-    supplemental_scenarios[[dimension_name]] <- slug(supplemental_scenarios[[dimension_name]])
-    active_levels <- scenario_levels$level_id[
-      scenario_levels$dimension == dimension_name & scenario_levels$active
-    ]
-    unknown_levels <- setdiff(unique(supplemental_scenarios[[dimension_name]]), active_levels)
-    if (length(unknown_levels) > 0) {
-      stop(
-        "Unknown active levels in supplemental scenarios for ", dimension_name, ": ",
-        paste(unknown_levels, collapse = ", "),
-        call. = FALSE
-      )
-    }
-  }
-
-  supplemental_ids <- make_scenario_id(supplemental_scenarios, factor_dimensions)
-  existing_ids <- make_scenario_id(scenario_matrix, factor_dimensions)
-  duplicate_ids <- c(
-    supplemental_ids[duplicated(supplemental_ids)],
-    intersect(supplemental_ids, existing_ids)
-  )
-  if (length(duplicate_ids) > 0) {
-    stop(
-      "Duplicate supplemental scenario IDs: ",
-      paste(unique(duplicate_ids), collapse = ", "),
-      call. = FALSE
-    )
-  }
-
-  supplemental_scenarios$analysis_set <- "set_aside"
-  scenario_matrix <- rbind(scenario_matrix, supplemental_scenarios)
-  message("Added ", nrow(supplemental_scenarios), " set-aside scenarios")
-}
 
 scenario_matrix$scenario_id <- make_scenario_id(scenario_matrix, factor_dimensions)
 scenario_matrix$site_id <- "enfarm"
@@ -195,13 +129,7 @@ scenario_matrix$output_dir <- file.path(
 # n_obs uses the unsuffixed base schedules, which apply UAN20 (20.2 g N/m2).
 explicit_schedule_rates <- c(
   n_obs = "",
-  n_none = "no_fert",
-  uan3 = "UAN3",
-  uan6 = "UAN6",
-  uan8 = "UAN8",
   uan10 = "UAN10",
-  uan11 = "UAN11",
-  uan18 = "UAN18",
   uan30 = "UAN30"
 )
 practice_schedule_codes <- c(conv = "CONV", nt = "NT", rt = "RT", cc = "CC",
@@ -222,9 +150,6 @@ for (i in explicit_schedule_rows) {
   } else if (grepl("^rev[0-9]+$", cycling_frequency)) {
     frequency <- sub("^rev", "", cycling_frequency)
     management_suffix <- paste0("cycle_", frequency)
-  } else if (grepl("^adopt(2|5|10)_rev$", cycling_frequency)) {
-    duration <- sub("^adopt([0-9]+)_rev$", "\\1", cycling_frequency)
-    management_suffix <- paste0("revert_", duration)
   } else {
     stop("No schedule mapping for cycling frequency: ", cycling_frequency, call. = FALSE)
   }
@@ -305,7 +230,6 @@ if (length(missing_counterfactuals) > 0) {
 front_columns <- c(
   "scenario_id",
   "site_id",
-  "analysis_set",
   "scenario_role",
   "is_project_scenario",
   "counterfactual_scenario_id",

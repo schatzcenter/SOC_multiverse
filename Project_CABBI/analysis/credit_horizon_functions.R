@@ -7,11 +7,9 @@
 # Sourced by credit_horizon_curves.R and plausible_sets.R.
 #
 # horizon_credits(repo_root, horizons, pools, counterfactuals, n2o_options,
-#                 units, analysis_sets): option IDs default to every active
-#                 option in accounting_options.csv (horizon options there are
-#                 ignored); analysis_sets limits the projects (e.g.
-#                 "sensitivity"; NULL = all). Projects are paired only with
-#                 counterfactual runs that exist.
+#                 units): option IDs default to every active option in
+#                 accounting_options.csv (horizon options there are ignored).
+#                 Projects are paired only with counterfactual runs that exist.
 # Returns one row per project scenario x carbon pool x counterfactual x N2O
 # option x functional unit x horizon h, with net_total (Mg CO2e/ha over the
 # horizon), net_annual (Mg CO2e/ha/yr), and bu_p (project bushels/ha over the
@@ -20,7 +18,7 @@
 library(data.table)
 
 horizon_credits <- function(repo_root, horizons = 1:30, pools = NULL, counterfactuals = NULL,
-                            n2o_options = NULL, units = NULL, analysis_sets = NULL) {
+                            n2o_options = NULL, units = NULL) {
   start_year <- 2020L
   c_to_co2 <- 44 / 12
   n2o_n_to_n2o <- 44 / 28
@@ -77,9 +75,8 @@ horizon_credits <- function(repo_root, horizons = 1:30, pools = NULL, counterfac
   # weather, and DEC4 (as in calculate_credit_values.R)
   match_keys <- c("n_rate", "historic_land_use", "weather_sequence", "dec4")
   projects <- scenario_matrix[is_project_scenario == TRUE,
-                              c("scenario_id", "analysis_set", "conservation_practice", "cycling_frequency",
+                              c("scenario_id", "conservation_practice", "cycling_frequency",
                                 match_keys), with = FALSE]
-  if (!is.null(analysis_sets)) projects <- projects[analysis_set %in% analysis_sets]
   references <- scenario_matrix[cycling_frequency == "cont" & conservation_practice %in% cf_opts$value,
                                 c("scenario_id", "conservation_practice", match_keys), with = FALSE]
   setnames(references, c("scenario_id", "conservation_practice"), c("counterfactual_scenario_id", "reference_practice"))
@@ -107,7 +104,7 @@ horizon_credits <- function(repo_root, horizons = 1:30, pools = NULL, counterfac
       ratio <- if (u == "bushel") g[, bu_p / bu_c] else 1
       g[, net_total := (dp - dc * ratio) * c_to_co2 - to_co2e(counted(np_dir, np_ind) - counted(nc_dir, nc_ind) * ratio)]
       g[, `:=`(n2o_option = o$n2o_option, functional_unit = u)]
-      g[, .(scenario_id, analysis_set, conservation_practice, n_rate, historic_land_use, cycling_frequency, dec4,
+      g[, .(scenario_id, conservation_practice, n_rate, historic_land_use, cycling_frequency, dec4,
             carbon_pool, counterfactual, n2o_option, functional_unit, h, net_total, bu_p)]
     }))
   }))
